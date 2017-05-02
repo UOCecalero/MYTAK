@@ -82,3 +82,7 @@ Route::get('/', function () {
 // Route::get('/evento', 'EventsController@index');
 
 // Route::get('/evento/{evento}', 'EventsController@show');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index');
