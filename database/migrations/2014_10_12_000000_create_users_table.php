@@ -16,11 +16,27 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->string('surnames');
             $table->string('email')->unique();
             $table->string('password');
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestampsTz();
+            $table->timestampTz('last_connection');
+            $table->binary('photo');
+            $table->date('birthdate');
+            $table->string('job', 50);
+            $table->string('studies', 50);
+            $table->string('email', 50);
+            $table->decimal('ranking', 5, 3);
+            $table->unsignedBigInteger('aceptar');
+            $table->unsignedBigInteger('saludar');
+            $table->unsignedBigInteger('rechazar');
+            $table->timestampTz('destacado_ini');
+            $table->timestampTz('destacado_fin');
+
         });
+
+        DB::statement('ALTER TABLE perfils ADD location POINT' );
     }
 
     /**
