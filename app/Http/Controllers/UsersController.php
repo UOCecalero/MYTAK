@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Hash;
+use App\Evento;
+use App\Match;
+use App\Empresa;
+use App\Bloqueado;
+use App\User;
+
 
 class UsersController extends Controller
 {
@@ -41,6 +46,7 @@ class UsersController extends Controller
 
         $user = new User;
 
+        $user->last_connection ='NOW()';
         $user->name = $request->name;
         $user->surnames = $request->surnames;
         $user->email = $request->email;
@@ -61,7 +67,7 @@ class UsersController extends Controller
 
         $user->save();
 
-        return 1;
+        return $user;
     }
 
     /**
@@ -120,12 +126,11 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function userevents($id)
+    public function userevents(User $user)
     {
-        $user = User::find($id);
         $eventos = $user->eventos;
 
-        return collect($eventos);
+        return $eventos;
     }
 
     /**
@@ -134,11 +139,11 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addevento($user_id,$evento_id)
+    public function addevento(User $user, Evento $evento)
     {
-        $user= User::find($user_id);
-        $user->eventos()->attach($evento_id);
+        $user->eventos()->attach($evento);
 
+        return 1;
     }
 
      /**
@@ -147,10 +152,17 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delevento($user_id,$evento_id)
+    public function delevento(User $user, Evento $evento)
     {
-        $user = User::find($user_id);
-        $user->eventos()->detach($evento_id);
+        $result = $user->eventos->where('id',$evento->id);
+
+        if( $result->isEmpty() != 'true')
+        {
+        
+        $user->eventos()->detach($evento);
+        return 1;
+        
+        } else return 'Este usuario no tiene el evento: '. $evento ;
 
     }
 
@@ -160,13 +172,13 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function matches($id)
-    {
-        $user = User::find($id);
-        $matches = $user->matches;
-        $matches = $matches->creador->where('usuario2_id', $id);
+    public function match(User $user)
+    {   
+        
+        $matches = $user->matches();
 
-        return collect ($matches);
+        if ($matches->isEmpty()){ return 'Este usuario aun no tiene ningun match'; }
+        else{ return $matches; }
     }
 
     /**
@@ -175,16 +187,33 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addmatch($user_id, $match_id, $evento_id)
-    {
-        $match = new App\Match;
-        $match->usuario1_id = $user_id;
-        $match->usuario2_id = $match_id;
-        $match->evento_id = $evento_id;
-        $match->save();
+    public function addmatch(User $user, User $user2, Evento $evento)
+    {   
+        $res1 = $user->eventos->where('id', $evento->id);
+        $res2 = $user2->eventos->where('id', $evento->id);
 
-        return $match;
+        if( $res1->isEmpty() == 'true' OR $res2->isEmpty() == 'true'  )
+        { 
+            return 'Algun o ambos usuarios no estan en el evento correcto';
+        }
 
+        else { 
+                $res = Match::where('usuario1_id', $user->id)
+                ->where('usuario2_id', $user2->id)
+                ->get();
+
+        if (  $res->isEmpty() )
+
+            {
+            $match = new Match;
+            $match->usuario1_id = $user->id;
+            $match->usuario2_id = $user2->id;
+            $match->evento_id = $evento->id;
+            $match->save();
+            }
+
+        return 1;
+        }
     }
 
     /**
@@ -193,13 +222,27 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delmatch($user_id, $match_id)
+    public function delmatch(User $user, User $match)
     {
-        $user = User::find($user_id);
-        $match = $user->matches()->where('usuario2_id', $match_id);
-        $match->delete();
+        $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get();
+
+        if ($res->isEmpty())
+        {
+        
+        return 'El usuario '.$user->name.' '.$user->surnames.' no tiene ningun match con '.$match->name.' '.$match->surnames;
+        
+        } 
+        
+        else
+        
+        {
+             $id = $res[0]->id;
+             Match::destroy($id);
+            return $match;
+        }
+        
+        
     
-        return $match;
 
     }
 
@@ -209,33 +252,27 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueados($user_id)
+    public function bloqueados(User $user)
     {
-        
-        $user = User::find($user_id);
         $bloqueados = $user->bloqueados;
 
-        return collect($bloqueados);
-
-    }
+        if($bloqueados->isNotEmpty())
+        {
+        return $bloqueados;
+        }
+        else return 'No hay usuarios bloqueados para este usuario';
+    }  
 
     /**
-     * Añadir un bloqueado a un user
+     * Añadir un bloqueo a un user dede user
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addbloqueado($user_id, $bloqueado_id)
-    {
-        
-        $bloqueado = new App\Bloqueado;
-        $bloqueado->bloqueado = $bloqueado_id;
-        $bloqueado->bloqueador_type = 'Illuminate\Foundation\Auth\User';
-        $bloqueado->bloqueador_id = $user_id;
-        $bloqueado->save();
+    public function addbloqueado(User $user, User $bloqueado)
+    {   
 
-
-        return $bloqueado;
+        $user->bloqueados()->attach($bloqueado->id);
 
     }
 
@@ -245,31 +282,35 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delbloqueado($user_id, $bloqueado_id)
+    public function delbloqueado(User $user, User $bloqueado)
     {
-        $user = User::find($user_id);
-        $bloqueados = $user->bloqueados;
-        $bloqueado = $bloqueados->where('bloqueado_id', $bloqueado_id);
-        $bloqueado->delete();
+        
+        $user->bloqueados()->detach($bloqueado->id);
 
-        return $bloqueado;
+        return 1
 
     }
 
     /**
-     * Eliminar una empresa de un user
+     * Eliminar una empresa de un user 
+     (Mientras un usuario solo temga una empresa con borrar la empresa con empresascontroller@destroy es suficiente)
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
-     */
-    public function delempresa($user_id, $empresa_id)
+     *
+    public function delempresa(User $user, Empresa $empresa)
     {
-        $user = User::find($user_id);
-        $bloqueados = $user->bloqueados;
-        $bloqueado = $bloqueados->where('bloqueado_id', $bloqueado_id);
-        $bloqueado->delete();
+        
+        
+        if ( $user->empresa == $empresa ){
 
-        return $bloqueado;
+        $empresa = $user->empresa->where('id', $empresa->id);
+        $empresa->delete();
 
-    }
-}
+        return $empresa;
+        }
+
+        else return 'La empresa que quieres borrar no corresponde a este usuario';
+
+    } 
+} **/

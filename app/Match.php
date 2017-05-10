@@ -8,9 +8,9 @@ class Match extends Model
 {
 	
 /**
-	public function perfiles(){
+	public function usuarios(){
 
-		return $this->belongsTo(Perfil::class, 'usuario2_id');
+		return $this->belongsTo(Usuario::class, 'usuario2_id');
 	}
 **/
 

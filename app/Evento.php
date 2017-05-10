@@ -13,9 +13,9 @@ class Evento extends Model
     	return $this->belongsTo(Empresa::class,'creator');
     }
 
-    public function perfiles()
+    public function users()
     {
-    	return $this->belongsToMany(Perfil::class);
+    	return $this->belongsToMany(User::class, 'evento_user');
     }
 
     public function matches()
@@ -25,6 +25,6 @@ class Evento extends Model
 
      public function bloqueados()
     {
-        $this->morphMany(Bloqueado::class, 'bloqueador');
+        $this->morphToMany(Bloqueado::class, 'bloqueador');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBloqueadosTable extends Migration
+class CreateBloqueadorsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class CreateBloqueadosTable extends Migration
      */
     public function up()
     {
-        Schema::create('bloqueados', function (Blueprint $table) {
+        Schema::create('bloqueadors', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
-            $table->UnsignedBigInteger('bloqueado_id');
+            $table->UnsignedBigInteger('user_id');
             $table->UnsignedBigInteger('bloqueador_id');
             $table->string('bloqueador_type');
         });
@@ -29,6 +29,6 @@ class CreateBloqueadosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('bloqueados');
+        Schema::dropIfExists('bloqueadors');
     }
 }

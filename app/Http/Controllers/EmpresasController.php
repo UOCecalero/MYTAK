@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Hash;
+use App\User;
 use App\Empresa;
 
 class EmpresasController extends Controller
@@ -36,18 +38,23 @@ class EmpresasController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Perfil $perfil)
+    public function store(Request $request, User $user)
     {
+        if( User::find($user->id) && ($user->id == $request->creator))
+        {
         $empresa = new Empresa;
 
-        $empresa->last_connection = 'NOW()';
-        $empresa->name = $request->name ;
-        $empresa->creator = $perfil->id;
-        $empresa->email = $request->email ;
-        $empresa->pwd = $request->pwd ;
-        $empresa->web = $request->web ;
+        $empresa->name = $request->name;
+        $empresa->creator = $user->id;
+        $empresa->email = $request->email;
+        $empresa->pwd = Hash::make($request->pwd);
+        $empresa->web = $request->web;
 
         $empresa->save();
+
+        return $empresa;
+
+        } else return 0;
         
     }
 
@@ -62,6 +69,19 @@ class EmpresasController extends Controller
         $empresa = Empresa::find($id);
 
         return $empresa;
+    }
+
+    /**
+     * Muestra los eventos propiedad de una empresa 
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showeventos(Empresa $empresa)
+    {
+        $eventos = $empresa->eventos;
+
+        return $eventos;
     }
 
     /**
@@ -93,13 +113,16 @@ class EmpresasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($perfil_id, $empresa_id)
+    public function destroy(User $user, Empresa $empresa)
     {   
-        $perfil = App\Perfil::find($perfil_id);
-        $empresa = $perfil->empresa->where('id', $empresa_id);
-        $empresa->delete();
+       if ($user->empresa == $empresa )
+        {
 
-        return $empresa;
+            $empresa->delete();
+            return 1;
+
+        } else return 0;
+
     }
 
     /**
@@ -108,14 +131,16 @@ class EmpresasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueados($empresa_id)
+    public function bloqueados(Empresa $empresa)
     {
         
-        $empresa = Empresa::find($empresa_id);
         $bloqueados = $empresa->bloqueados;
 
-        return collect($bloqueados);
-
+        if($bloqueados->isNotEmpty())
+        {
+        return $bloqueados;
+        }
+        else return 'No hay usuarios bloqueados para esta empresa';
     }
 
     /**
@@ -124,14 +149,11 @@ class EmpresasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addbloqueado($empresa_id, $bloqueado_id)
+    public function addbloqueado(Empresa $empresa, User $bloqueado)
     {
         
-        $bloqueado = new App\Bloqueado;
-        $bloqueado->bloqueado = $bloqueado_id;
-        $bloqueado->bloqueador_type = 'App\Empresa';
-        $bloqueado->bloqueador_id = $empresa_id;
-        $bloqueado->save();
+        
+        $empresa->bloqueados()->attach($bloqueado->id);
 
 
         return $bloqueado;
@@ -144,14 +166,16 @@ class EmpresasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delbloqueado($empresa_id, $bloqueado_id)
-    {
-        $empresa = Perfil::find($empresa_id);
-        $bloqueados = $empresa->bloqueados;
-        $bloqueado = $bloqueados->where('bloqueado_id', $bloqueado_id);
-        $bloqueado->delete();
+    public function delbloqueado(Empresa $empresa, User $bloqueado)
+    {   
+        $res = $empresa->bloqueados->where('id', $bloqueado->id);
 
-        return $bloqueado;
+        //Si existe como bloqueado lo quita de la lista y sino no hace nada y devuelve 1 igualmente.
+        
+        if ( $res->isNotEmpty()  ){
+        $empresa->bloqueados()->detach($bloqueado->id);
+        }
+        return 1;
 
     }
 }

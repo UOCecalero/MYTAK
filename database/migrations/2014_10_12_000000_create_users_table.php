@@ -26,7 +26,6 @@ class CreateUsersTable extends Migration
             $table->date('birthdate');
             $table->string('job', 50);
             $table->string('studies', 50);
-            $table->string('email', 50);
             $table->decimal('ranking', 5, 3);
             $table->unsignedBigInteger('aceptar');
             $table->unsignedBigInteger('saludar');
@@ -36,7 +35,7 @@ class CreateUsersTable extends Migration
 
         });
 
-        DB::statement('ALTER TABLE perfils ADD location POINT' );
+        DB::statement('ALTER TABLE users ADD location POINT' );
     }
 
     /**

@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Evento;
+use App\Empresa;
 
-class EventsController extends Controller
+class EventosController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,7 +18,7 @@ class EventsController extends Controller
     {
         $eventos = Evento::all();
 
-        return $evento;
+        return $eventos;
     }
 
     /**
@@ -37,10 +38,14 @@ class EventsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, Empresa $empresa)
-    {
+    {   
+        if( Empresa::find($empresa) && ($empresa->id == $request->creator))
+        {
+
         $evento = new Evento;
 
-        $evento->creator = $empresa;
+        $evento->creator = $empresa->id;
+        //$evento->creator = $request->creator;
         $evento->nombre = $request->nombre ;
         $evento->photo = $request->photo ;
         $evento->event_ini = $request->event_ini ;
@@ -54,6 +59,8 @@ class EventsController extends Controller
         $evento->save();
 
         return $evento;
+        
+        } else return 0;
     }
 
     /**
@@ -98,11 +105,22 @@ class EventsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($empresa_id, $event_id)
     {
-        $evento = Evento::destroy($id);
+        
+        if ($evento = Evento::find($event_id))
+        {
+            if (Empresa::find($empresa_id))
+            {
+                if($evento->creator == $empresa_id){
 
-        return $evento;
+                    $evento->destroy();
+                    return 1;
+                } 
+            }
+        }
+        
+        return 0;
     }
 
     
