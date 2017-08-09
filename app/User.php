@@ -26,7 +26,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'ranking', 'created_at', 'destacado_ini', 'destacado_fin',
     ];
 
 
@@ -65,7 +65,6 @@ class User extends Authenticatable
 
     public function bloqueados()
     {
-       // return $this->morphToMany(Bloqueado::class, 'bloqueador');
         return $this->morphToMany(User::class, 'bloqueador');
     }
 

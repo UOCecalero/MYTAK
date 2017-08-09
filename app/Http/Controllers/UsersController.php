@@ -25,6 +25,38 @@ class UsersController extends Controller
         return $users;
     }
 
+
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function exists($fbid)
+    {
+        $user = User::where('FBid', $fbid )->get();
+
+        $resp = count($user);
+
+        if ($resp == 0) { return $resp; }
+
+        else { return $user[0]->id; }
+
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function email($fbid)
+    {
+        $user = User::where('FBid', $fbid )->get();
+
+
+        return $user->email;
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -43,26 +75,47 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
+        $data= $request->json()->all();
 
         $user = new User;
 
-        $user->last_connection ='NOW()';
-        $user->name = $request->name;
-        $user->surnames = $request->surnames;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->photo = $request->photo;
-        $user->birthdate = $request->birthdate;
-        $user->job = $request->job;
-        $user->studies = $request->studies;
-        $user->email = $request->email;
-        $user->ranking = $request->ranking;
-        $user->aceptar = $request->aceptar;
-        $user->saludar = $request->saludar;
-        $user->rechazar = $request->rechazar;
-        $user->destacado_ini = $request->destacado_ini;
-        $user->destacado_fin = $request->destacado_fin;
-        //$user->location = $request->location;
+        $user->FBid = $data['FBid'];
+        //$user->last_connection =$data('last_connection');
+        $user->name = $data['name'];
+        $user->surnames = $data['surnames'];
+        $user->gender = $data['gender'];
+        $user->email = $data['email'];
+        $user->password = Hash::make($data['password']);
+        $user->photo = $data['photo'];
+        $user->birthdate = $data['birthdate'];
+        $user->job = $data['job'];
+        $user->studies = $data['studies'];
+        //$user->ranking = $data('ranking'); No se puede mandar el ranking desde fuera
+        $user->aceptar = $data['aceptar'];
+        $user->saludar = $data['saludar'];
+        $user->rechazar = $data['rechazar'];
+        $user->destacado_ini = $data['destacado_ini'];
+        $user->destacado_fin = $data['destacado_fin'];
+        $user->location = $data['location'];
+
+        // $user->FBid = request->FBid;
+        // //$user->last_connection =$request->last_connection;
+        // $user->name = $request->name;
+        // $user->surnames = $request->surnames;
+        // $user->gender = $request->gender;
+        // $user->email = $request->email;
+        // $user->password = Hash::make($request->password);
+        // $user->photo = $request->photo;
+        // $user->birthdate = $request->birthdate;
+        // $user->job = $request->job;
+        // $user->studies = $request->studies;
+        // //$user->ranking = $request->ranking; No se puede mandar el ranking desde fuera
+        // $user->aceptar = $request->aceptar;
+        // $user->saludar = $request->saludar;
+        // $user->rechazar = $request->rechazar;
+        // $user->destacado_ini = $request->destacado_ini;
+        // $user->destacado_fin = $request->destacado_fin;
+        // $user->location = $request->location;
     
 
         $user->save();
@@ -76,10 +129,13 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($fbid)
     {
-        $user = User::find($id);
+        // $user = User::where('FBid', $fbID )->get();
 
+        // return $user;
+
+        $user = User::find($fbid);
         return $user;
     }
 
@@ -130,7 +186,9 @@ class UsersController extends Controller
     {
         $eventos = $user->eventos;
 
-        return $eventos;
+        if ($eventos->isEmpty()){ return null; }
+        else{ return $eventos; }
+
     }
 
     /**
@@ -141,7 +199,9 @@ class UsersController extends Controller
      */
     public function addevento(User $user, Evento $evento)
     {
-        $user->eventos()->attach($evento);
+        if (! $user->eventos->contains($evento)) {
+            
+            $user->eventos()->attach($evento);}
 
         return 1;
     }
@@ -177,7 +237,7 @@ class UsersController extends Controller
         
         $matches = $user->matches();
 
-        if ($matches->isEmpty()){ return 'Este usuario aun no tiene ningun match'; }
+        if ($matches->isEmpty()){ return null; }
         else{ return $matches; }
     }
 
@@ -230,7 +290,6 @@ class UsersController extends Controller
         {
         
         return 'El usuario '.$user->name.' '.$user->surnames.' no tiene ningun match con '.$match->name.' '.$match->surnames;
-        
         } 
         
         else
@@ -241,8 +300,6 @@ class UsersController extends Controller
             return $match;
         }
         
-        
-    
 
     }
 
@@ -260,7 +317,7 @@ class UsersController extends Controller
         {
         return $bloqueados;
         }
-        else return 'No hay usuarios bloqueados para este usuario';
+        else return null;
     }  
 
     /**
@@ -287,9 +344,23 @@ class UsersController extends Controller
         
         $user->bloqueados()->detach($bloqueado->id);
 
-        return 1
+        return 1;
 
     }
+
+    /*** 
+     * Mostrar la empresa(s) de un user
+     *
+     * @param  int  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function showEmpresa(User $user)
+    {
+        
+        
+        return $user->empresa;
+
+    } 
 
     /**
      * Eliminar una empresa de un user 
@@ -314,3 +385,4 @@ class UsersController extends Controller
 
     } 
 } **/
+}

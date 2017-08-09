@@ -16,6 +16,8 @@ use App\Http\Controllers\Auth\RegisterController;
 
 Route::post('/register', 'UsersController@store'); //OK
 
+Route::get('/users/exists/{FBid}', 'UsersController@exists'); //OK
+
 Route::middleware('auth:api')->get('/users', 'UsersController@index'); //OK
 
 Route::middleware('auth:api')->get('/user/{user}', 'UsersController@show'); //OK
@@ -38,13 +40,15 @@ Route::middleware('auth:api')->post('/user/{user}/match/{user2}/{evento}', 'User
 
 Route::middleware('auth:api')->delete('/user/{user}/match/{match}', 'UsersController@delmatch'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/bloqueado', 'UsersController@bloqueados'); 
+Route::middleware('auth:api')->get('/user/{user}/bloqueado', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
+
+Route::middleware('auth:api')->get('/user/{user}/bloqueado', 'UsersController@bloqueados'); //Debería devolver los que te tienen bloqueado
 
 Route::middleware('auth:api')->post('/user/{user}/bloqueado/{bloqueado}', 'UsersController@addbloqueado');
 
 Route::middleware('auth:api')->delete('/user/{user}/bloqueado/{bloqueado}', 'UsersController@delbloqueado');
 
-//Route::middleware('auth:api')->get('/user/{user}/empresa', ''); Por el momento se supone que un usuario solo puede crear una empresa
+Route::middleware('auth:api')->get('/user/{user}/empresa', 'UsersController@showEmpresa'); 
 
 Route::middleware('auth:api')->post('/user/{user}/empresa', 'EmpresasController@store'); //OK
 
@@ -68,16 +72,18 @@ Route::middleware('auth:api')->delete ('/empresa/{empresa}/evento/{evento}','Eve
 
 //Route::middleware('auth:api')->patch ('/empresa/{empresa}/evento/{evento}','EmpresasController@index ');
 
-Route::middleware('auth:api')->get('/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados');
+Route::middleware('auth:api')->get('/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados'); //OK
 
-Route::middleware('auth:api')->post('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado'); //OK
+Route::middleware('auth:api')->post('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado');//OK
 
 Route::middleware('auth:api')->delete('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@delbloqueado');
-
+//OK
 
 
 /******************************* Evento interface **********************************************/
 
 Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
+//Route::middleware('auth:api')->post('/eventos', 'EventosController@index'); //Futuro método pasar parametros
+
 
 Route::middleware('auth:api')->get('/evento/{evento}', 'EventosController@show'); //OK

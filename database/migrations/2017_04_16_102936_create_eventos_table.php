@@ -17,7 +17,7 @@ class CreateEventosTable extends Migration
             $table->increments('id');
             $table->timestampsTz();
             $table->unsignedBigInteger('creator');
-            $table->string('nombre', 50);
+            $table->string('nombre');
             $table->binary('photo');
             $table->timestampTz('event_ini');
             $table->timestampTz('event_fin');

@@ -15,8 +15,10 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedBigInteger('FBid');
             $table->string('name');
             $table->string('surnames');
+            $table->boolean('gender');
             $table->string('email')->unique();
             $table->string('password');
             $table->rememberToken();
@@ -24,14 +26,14 @@ class CreateUsersTable extends Migration
             $table->timestampTz('last_connection');
             $table->binary('photo');
             $table->date('birthdate');
-            $table->string('job', 50);
-            $table->string('studies', 50);
-            $table->decimal('ranking', 5, 3);
+            $table->string('job', 50)->nullable();
+            $table->string('studies', 50)->nullable();
+            $table->decimal('ranking', 5, 3)->nullable();
             $table->unsignedBigInteger('aceptar');
             $table->unsignedBigInteger('saludar');
             $table->unsignedBigInteger('rechazar');
-            $table->timestampTz('destacado_ini');
-            $table->timestampTz('destacado_fin');
+            $table->timestampTz('destacado_ini')->nullable();
+            $table->timestampTz('destacado_fin')->nullable();
 
         });
 
