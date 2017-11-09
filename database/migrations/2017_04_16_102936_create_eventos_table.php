@@ -21,14 +21,14 @@ class CreateEventosTable extends Migration
             $table->binary('photo');
             $table->timestampTz('event_ini');
             $table->timestampTz('event_fin');
-            $table->decimal('price', 5, 2);
             $table->unsignedMediumInteger('aforo');
             $table->timestampTz('destacado_ini');
             $table->timestampTz('destacado_fin');
+            $table->string('location_name');
+            $table->float('lat',10,6)->nullable();
+            $table->float('lng',10,6)->nullable();
 
         });
-
-        DB::statement('ALTER TABLE eventos ADD location POINT');
     }
 
     /**

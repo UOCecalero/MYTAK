@@ -13,6 +13,12 @@ class Evento extends Model
     	return $this->belongsTo(Empresa::class,'creator');
     }
 
+    //prices()
+    public function tickets()
+    {
+        return $this->hasMany(Price::class, 'evento_id');
+    }
+
     public function users()
     {
     	return $this->belongsToMany(User::class, 'evento_user');

@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that are mass assignable. PASSWORD?????
      *
      * @var array
      */
@@ -36,6 +36,11 @@ class User extends Authenticatable
     public function empresa()
     {
         return $this->hasOne(Empresa::class,'creator');
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class,'user_id');
     }
 
     public function eventos()

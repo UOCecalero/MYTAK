@@ -9,6 +9,7 @@ use App\Match;
 use App\Empresa;
 use App\Bloqueado;
 use App\User;
+//use Stripe\{Stripe, Charge, Customer}
 
 
 class UsersController extends Controller
@@ -24,7 +25,6 @@ class UsersController extends Controller
 
         return $users;
     }
-
 
 
     /**
@@ -184,45 +184,86 @@ class UsersController extends Controller
      */
     public function userevents(User $user)
     {
-        $eventos = $user->eventos;
+        $eventos = DB::table('tickets')
+                    ->where('tickets.user_id', '=', $user->id)
+                    ->join('prices', 'tickets.price_id', '=', 'prices.id')
+                    ->join('eventos','prices.evento_id','=','eventos.id')
+                    ->select('tickets.id as ticketid','eventos.*','prices.name','prices.description','prices.precio','tickets.qr')
+                    ->get();
 
         if ($eventos->isEmpty()){ return null; }
         else{ return $eventos; }
 
     }
 
-    /**
-     * Añadir un evento al listado de eventos de un user concreto
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function addevento(User $user, Evento $evento)
-    {
-        if (! $user->eventos->contains($evento)) {
-            
-            $user->eventos()->attach($evento);}
+    // /**
+    //  * Añadir un evento al listado de eventos de un user concreto
+    //  *
+    //  * @param  int  $id
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function addevento(User $user, Evento $evento)
+    // {   
+    //     //Si el evento ya ha sido añadido/comprado, devuelve un 0;
+       
+    //     if (! $user->eventos->contains($evento)) {
 
-        return 1;
-    }
+    //             if ($evento->price > 0){
+
+    //             $charge = Charge::Create([
+
+    //              'customer' => $user->customer->id,
+    //              'amount' => $evento->price,
+    //              'currency' => 'eur',
+    //              'description' => 'Tunait: '.$evento->nombre.' '.$evento->event_ini
+
+    //              ]);
+
+    //             //Aqui hay que implementar el código que guarda el token ($charge->id) del cargo en la pivot table que relaciona usuarios y eventos
+
+    //             //Aqui hay que implementar el envío de un email con el recibo donde conste el código QR que no es mas que el token de pago codificado.
+    //             }
+            
+    //         $user->eventos()->attach($evento);
+    //         return 1;
+
+    //     }
+
+    //     return 0;
+    // }
+
+    //  /**
+    //  * Eliminar un evento del listado de eventos de un user concreto
+    //  *
+    //  * @param  int  $id
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function delevento(User $user, Evento $evento)
+    // {
+    //     $result = $user->eventos->where('id',$evento->id);
+
+    //     if( $result->isEmpty() != 'true')
+    //     {
+        
+    //     $user->eventos()->detach($evento);
+    //     return 1;
+        
+    //     } else return 'Este usuario no tiene el evento: '. $evento ;
+
+    // }
 
      /**
-     * Eliminar un evento del listado de eventos de un user concreto
+     * Create a customer id and add it to the database 
      *
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delevento(User $user, Evento $evento)
+    public function newUserPurchase(User $user, $token)
     {
-        $result = $user->eventos->where('id',$evento->id);
+       
 
-        if( $result->isEmpty() != 'true')
-        {
-        
-        $user->eventos()->detach($evento);
-        return 1;
-        
-        } else return 'Este usuario no tiene el evento: '. $evento ;
+            $user = User::find($user);
+            $user->customer_id = $customerid;
+            return 1;        
 
     }
 

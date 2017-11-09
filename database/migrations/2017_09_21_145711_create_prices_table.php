@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEventoUserTable extends Migration
+class CreatePricesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,13 @@ class CreateEventoUserTable extends Migration
      */
     public function up()
     {
-        Schema::create('evento_user', function (Blueprint $table) {
+        Schema::create('prices', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestampsTz();
+            $table->timestamps();
+            $table->string('name');
+            $table->string('description');
             $table->unsignedBigInteger('evento_id');
-            $table->unsignedBigInteger('user_id');
-            
-            
+            $table->decimal('precio', 5, 2);
         });
     }
 
@@ -30,7 +30,6 @@ class CreateEventoUserTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('evento_user');
-        
+        Schema::dropIfExists('prices');
     }
 }

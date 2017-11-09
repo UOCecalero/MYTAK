@@ -34,10 +34,13 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('rechazar');
             $table->timestampTz('destacado_ini')->nullable();
             $table->timestampTz('destacado_fin')->nullable();
+            $table->string('customer')->unique()->nullable();
+            $table->float('lat',10,6)->nullable();
+            $table->float('lng',10,6)->nullable();
+
 
         });
 
-        DB::statement('ALTER TABLE users ADD location POINT' );
     }
 
     /**

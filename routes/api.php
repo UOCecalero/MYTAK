@@ -10,7 +10,7 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 | Here is where you can register API routes for your application. These
 | routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
+| is assigned the "api" middleware group. Enjoy building your API!user
 |
 */
 
@@ -26,13 +26,15 @@ Route::middleware('auth:api')->get('/user/{user}', 'UsersController@show'); //OK
 
 Route::middleware('auth:api')->delete('/user/{user}', 'UsersController@destroy'); //OK
 
+Route::middleware('auth:api')->get('/user/{user}/ticket', 'PurchasesController@show');
+
 //Route::middleware('auth:api')->patch('/user/{user}', 'UsersController@index');
 
-Route::middleware('auth:api')->get('/user/{user}/evento', 'UsersController@userevents'); //OK
+ Route::middleware('auth:api')->get('/user/{user}/evento', 'UsersController@userevents'); //OK
 
-Route::middleware('auth:api')->post('/user/{user}/evento/{evento}', 'UsersController@addevento'); //OK
+// Route::middleware('auth:api')->post('/user/{user}/evento/{evento}', 'UsersController@addevento'); //OK
 
-Route::middleware('auth:api')->delete('/user/{user}/evento/{evento}', 'UsersController@delevento'); //OK
+// Route::middleware('auth:api')->delete('/user/{user}/evento/{evento}', 'UsersController@delevento'); //OK
 
 Route::middleware('auth:api')->get('/user/{user}/match', 'UsersController@match'); //OK
 
@@ -87,3 +89,12 @@ Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
 
 
 Route::middleware('auth:api')->get('/evento/{evento}', 'EventosController@show'); //OK
+
+/********************************* Ticket interface *******************************************/
+
+// Route::middleware('auth:api')->post('/customer/{user}','PurchasesController@newCustomer');
+
+Route::middleware('auth:api')->get('/customer/{user}/{type}/{num_tickets}/{card_token}','PurchasesController@store');
+
+Route::get('/validate/{hash}','PurchasesController@validateTicket');
+

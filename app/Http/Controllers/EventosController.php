@@ -69,9 +69,9 @@ class EventosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Evento $evento)
     {
-        $evento = Evento::find($id);
+        //$evento = Evento::find($id);
 
         return $evento;
     }
