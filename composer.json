@@ -10,7 +10,8 @@
         "laravel/passport": "^2.0",
         "laravel/tinker": "~1.0",
         "nesbot/carbon": "^1.22",
-        "simplesoftwareio/simple-qrcode": "~1"
+        "simplesoftwareio/simple-qrcode": "~2",
+        "stripe/stripe-php": "^6.1"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

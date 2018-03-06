@@ -18,7 +18,7 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('FBid');
             $table->string('name');
             $table->string('surnames');
-            $table->boolean('gender');
+            $table->string('gender',6);
             $table->string('email')->unique();
             $table->string('password');
             $table->rememberToken();
@@ -37,6 +37,9 @@ class CreateUsersTable extends Migration
             $table->string('customer')->unique()->nullable();
             $table->float('lat',10,6)->nullable();
             $table->float('lng',10,6)->nullable();
+            $table->string('genderpreference',6); //options: male, female o both
+            $table->tinyInteger('inagepreference')->default(18);
+            $table->tinyInteger('outagepreference')->default(99);
 
 
         });

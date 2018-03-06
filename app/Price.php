@@ -11,7 +11,7 @@ class Price extends Model
     	return $this->hasMany(Ticket::class, 'price_id');
     }
 
-    public function price()
+    public function evento()
     {
     	return $this->belongsTo(Evento::class, 'evento_id');
     }

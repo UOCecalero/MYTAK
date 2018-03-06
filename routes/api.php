@@ -14,13 +14,16 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 
-Route::post('/register', 'UsersController@store'); //OK
+Route::post('/register', 'UsersController@create'); //OK
+
+Route::middleware('auth:api')->get('/user/{user}', 'UsersController@show'); //OK
+
+Route::middleware('auth:api')->post('/user/{user}', 'UsersController@store');
 
 Route::get('/users/exists/{FBid}', 'UsersController@exists'); //OK
 
 Route::middleware('auth:api')->get('/users', 'UsersController@index'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}', 'UsersController@show'); //OK
 
 //Route::middleware('auth:api')->post('/perfil', 'PerfilsController@store');
 
@@ -30,7 +33,11 @@ Route::middleware('auth:api')->get('/user/{user}/ticket', 'PurchasesController@s
 
 //Route::middleware('auth:api')->patch('/user/{user}', 'UsersController@index');
 
- Route::middleware('auth:api')->get('/user/{user}/evento', 'UsersController@userevents'); //OK
+Route::middleware('auth:api')->get('/user/{user}/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
+
+Route::middleware('auth:api')->get('/user/{user}/timeline/{position}/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+
+Route::middleware('auth:api')->get('/user/{user}/ticket/{ticket}' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
 // Route::middleware('auth:api')->post('/user/{user}/evento/{evento}', 'UsersController@addevento'); //OK
 
@@ -38,13 +45,15 @@ Route::middleware('auth:api')->get('/user/{user}/ticket', 'PurchasesController@s
 
 Route::middleware('auth:api')->get('/user/{user}/match', 'UsersController@match'); //OK
 
-Route::middleware('auth:api')->post('/user/{user}/match/{user2}/{evento}', 'UsersController@addmatch'); //OK
+Route::middleware('auth:api')->get('/user/{user}/ticket/{ticket}/match/{user2}/{es_aceptado}', 'UsersController@addmatch'); //OK
 
 Route::middleware('auth:api')->delete('/user/{user}/match/{match}', 'UsersController@delmatch'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/bloqueado', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
+Route::middleware('auth:api')->delete('/evento/{evento}/match', 'UsersController@delmatchonevento'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/bloqueado', 'UsersController@bloqueados'); //Debería devolver los que te tienen bloqueado
+Route::middleware('auth:api')->get('/user/{user}/bloqueados', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
+
+Route::middleware('auth:api')->get('/user/{user}/bloqueadores', 'UsersController@bloqueados'); //Debería devolver los que te tienen bloqueado
 
 Route::middleware('auth:api')->post('/user/{user}/bloqueado/{bloqueado}', 'UsersController@addbloqueado');
 
@@ -84,11 +93,13 @@ Route::middleware('auth:api')->delete('/empresa/{empresa}/bloqueado/{bloqueado}'
 
 /******************************* Evento interface **********************************************/
 
-Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
+//La devolución de los eventos solo se hace en base a ciertos parámetros
+//Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
 //Route::middleware('auth:api')->post('/eventos', 'EventosController@index'); //Futuro método pasar parametros
 
 
 Route::middleware('auth:api')->get('/evento/{evento}', 'EventosController@show'); //OK
+
 
 /********************************* Ticket interface *******************************************/
 
@@ -98,3 +109,6 @@ Route::middleware('auth:api')->get('/customer/{user}/{type}/{num_tickets}/{card_
 
 Route::get('/validate/{hash}','PurchasesController@validateTicket');
 
+/********************************* FileTransfer interface *******************************************/
+
+Route::post('/upload/{user}','ArchiveController@store');

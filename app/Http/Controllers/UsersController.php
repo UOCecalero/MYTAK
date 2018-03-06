@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Evento;
 use App\Match;
 use App\Empresa;
 use App\Bloqueado;
 use App\User;
+use Carbon\Carbon;
 //use Stripe\{Stripe, Charge, Customer}
 
 
@@ -64,17 +66,7 @@ class UsersController extends Controller
      */
     public function create()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
+        //Esta funcion se usa para crear y para modificar un usuairo 
         $data= $request->json()->all();
 
         $user = new User;
@@ -87,36 +79,65 @@ class UsersController extends Controller
         $user->email = $data['email'];
         $user->password = Hash::make($data['password']);
         $user->photo = $data['photo'];
-        $user->birthdate = $data['birthdate'];
+        //$user->birthdate = $data['birthdate'];
         $user->job = $data['job'];
         $user->studies = $data['studies'];
-        //$user->ranking = $data('ranking'); No se puede mandar el ranking desde fuera
         $user->aceptar = $data['aceptar'];
         $user->saludar = $data['saludar'];
         $user->rechazar = $data['rechazar'];
         $user->destacado_ini = $data['destacado_ini'];
         $user->destacado_fin = $data['destacado_fin'];
-        $user->location = $data['location'];
+        $user->lat = $data['lat'];
+        $user->lng = $data['lng'];
+        $user->genderpreference = $data['genderpreference'];
 
-        // $user->FBid = request->FBid;
-        // //$user->last_connection =$request->last_connection;
-        // $user->name = $request->name;
-        // $user->surnames = $request->surnames;
-        // $user->gender = $request->gender;
-        // $user->email = $request->email;
-        // $user->password = Hash::make($request->password);
-        // $user->photo = $request->photo;
-        // $user->birthdate = $request->birthdate;
-        // $user->job = $request->job;
-        // $user->studies = $request->studies;
-        // //$user->ranking = $request->ranking; No se puede mandar el ranking desde fuera
-        // $user->aceptar = $request->aceptar;
-        // $user->saludar = $request->saludar;
-        // $user->rechazar = $request->rechazar;
-        // $user->destacado_ini = $request->destacado_ini;
-        // $user->destacado_fin = $request->destacado_fin;
-        // $user->location = $request->location;
-    
+        $user->ranking = function(){ 
+
+                            $collection = App\User::all(); 
+                            $avg = $collection->avg('ranking'); 
+                            $avg = $avg + $avg / 2;
+
+                            if ($avg > 89) { $avg = 89; }
+
+                            if ($avg == 0) { $avg = 45; }
+
+                            return $avg;  
+                        };
+        
+        $user->save();
+
+        return $user;
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(User $user, Request $request)
+    {
+        //Esta funcion se usa para crear y para modificar un usuairo 
+        $data= $request->json()->all();
+
+        //$user->FBid = $data['FBid'];
+        //$user->last_connection =$data('last_connection');
+        $user->name = $data['name'];
+        $user->surnames = $data['surnames'];
+        $user->gender = $data['gender'];
+        //$user->email = $data['email'];
+        $user->password = Hash::make($data['password']);
+        $user->photo = $data['photo'];
+        //$user->birthdate = $data['birthdate'];
+        $user->job = $data['job'];
+        $user->studies = $data['studies'];
+        //$user->aceptar = $data['aceptar'];
+        //$user->saludar = $data['saludar'];
+        //$user->rechazar = $data['rechazar'];
+        //$user->destacado_ini = $data['destacado_ini'];
+        //$user->destacado_fin = $data['destacado_fin'];
+        $user->lat = $data['lat'];
+        $user->lng = $data['lng'];
 
         $user->save();
 
@@ -177,7 +198,7 @@ class UsersController extends Controller
 
 
     /**
-     * Listado de eventos de un user concreto
+     * Listado de eventos comprados de un user concreto
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -188,11 +209,116 @@ class UsersController extends Controller
                     ->where('tickets.user_id', '=', $user->id)
                     ->join('prices', 'tickets.price_id', '=', 'prices.id')
                     ->join('eventos','prices.evento_id','=','eventos.id')
-                    ->select('tickets.id as ticketid','eventos.*','prices.name','prices.description','prices.precio','tickets.qr')
+                    ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr')
                     ->get();
 
         if ($eventos->isEmpty()){ return null; }
         else{ return $eventos; }
+
+    }
+
+     /**
+     * Devuelve la posición ordenada del evento en función de su puntuación y la distancia.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function orderevents(User $user, $position, $distance)
+    {   
+        $lat = $user->lat;
+        $lng = $user->lng; 
+        
+
+        //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto**/ }
+
+            $filtered = Evento::all()->filter(function ($evento) use ($lat, $lng, $distance){
+                            $actual = 3959 * acos(
+                            cos(deg2rad($lat)) * cos(deg2rad($evento->lat))
+                            * cos(deg2rad($evento->lng) - deg2rad($lng))
+                            + sin(deg2rad($lat)) * sin(deg2rad($evento->lat))
+                        );
+
+                        $evento['distance'] = $actual; //Guarda la distancia en una nueva propiedad del evento
+                        $evento['distfactor'] = round((90 /(1 + ($actual / $distance))) * 10);
+
+                         return $distance > $actual;
+                        });
+
+            // //Filtra todos los eventos que ya han finalizado
+            // $filtered = $filtered->filter(function($evento){
+            //             $fin = new Carbon($evento->event_fin);
+            //             return $fin->isfuture();
+
+            //             }) 
+
+        // if ($day){} /**Aqui falta hacer el filtrado por dia. **/
+
+            $current = Carbon::now('Europe/Madrid'); //Calcula el tiempo actual UTC para hacer comparaciones
+            
+            $filtered->map(function($element) use ($current){
+
+                $element['popfactor'] = ((count($element->tickets) / ($element->aforo)) * 450 ) - 450;
+                $event_ini = new Carbon($element->event_ini);
+                
+                $diff = $current->diffInHours($event_ini);
+                
+                if ($diff < 2){
+                    $element['timefactor'] = 90;
+
+                } else if ($diff < 4){
+                    $element['timefactor'] = 80;
+
+                } else if ($diff < 6){
+                    $element['timefactor'] = 70;
+
+                } else if ($diff < 12){
+                    $element['timefactor'] = 60;
+
+                } else if ($diff < 24){
+                    $element['timefactor'] = 50;
+
+                } else if ($diff < 72){
+                    $element['timefactor'] = 40;
+
+                } else if ($diff < 168){
+                    $element['timefactor'] = 30;
+                }
+                else if ($diff < 360){
+                    $element['timefactor'] = 20;
+
+                } else { $element['timefactor'] = 10; }
+
+                $element['points'] = $element['distfactor'] + $element['popfactor'] + $element['timefactor'];
+                // //Aqui se cuenta el histórico de factor de popularidad del creador
+                // $element['points'] = $element['distfactor'] - (($element['popfactor']+$element->creator->histpopfactor)/2) + element['timefactor'];
+
+
+                //Si el evento es premium divide el factor entre 10 y le suma 900 para dejarlo entre los primeros
+                $first = new Carbon($element->destacado_ini);
+                $second = new Carbon($element->destacado_fin);
+                //$element['now'] = new Carbon('Europe/Madrid');
+                $element['premium'] = Carbon::now('Europe/Madrid')->between($first, $second);
+
+                if ($element['premium']){
+
+                    
+                    $element['points'] = $element['points']/10 + 900;
+
+                }
+
+                return $element;
+
+            });
+
+            $sorted = $filtered->sortByDesc(function($element){
+
+
+                return $element->points;
+            });
+
+            return $sorted->values()->get($position - 1); //La resta es para que empiece a indexar en 1
+
+                
 
     }
 
@@ -283,19 +409,20 @@ class UsersController extends Controller
     }
 
     /**
-     * Crear un match un match de un user
+     * Crear un match un match de un user. Devuelve 1 si se añade exitosamente. Sino un texto con el error
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addmatch(User $user, User $user2, Evento $evento)
+    public function addmatch(User $user, Ticket $tikcet, User $user2, /**bool**/ $aceptado)
     {   
-        $res1 = $user->eventos->where('id', $evento->id);
-        $res2 = $user2->eventos->where('id', $evento->id);
+        
+        // $res1 = $user->tickets->where('evento_id', $evento->id);
+        $res2 = $user2->tickets->where('evento_id', $ticket->evento->id);
 
-        if( $res1->isEmpty() == 'true' OR $res2->isEmpty() == 'true'  )
+        if( /* $res1->isEmpty() === 'true' OR */ $res2->isEmpty() === 'true'  )
         { 
-            return 'Algun o ambos usuarios no estan en el evento correcto';
+            return 'Alguno o ambos usuarios no tienen tickets para ese evento';
         }
 
         else { 
@@ -303,42 +430,93 @@ class UsersController extends Controller
                 ->where('usuario2_id', $user2->id)
                 ->get();
 
-        if (  $res->isEmpty() )
+            if (  $res->isEmpty() )
 
-            {
-            $match = new Match;
-            $match->usuario1_id = $user->id;
-            $match->usuario2_id = $user2->id;
-            $match->evento_id = $evento->id;
-            $match->save();
-            }
+                {
+                $match = new Match;
+                $match->usuario1_id = $user->id;
+                $match->usuario2_id = $user2->id;
+                $match->evento_id = $evento->id;
+                $match->es_aceptado = $aceptado; //hay que asegurar que esto es un booleano
+                $match->save();
 
-        return 1;
+                    if($aceptado)
+                    {
+
+                        $user->aceptar = $user->aceptar ++;
+
+                    } else{
+
+                        $user->rechazar = $user->rechazar ++;
+                    }
+                }
+
+            return 1;
         }
     }
 
     /**
-     * Eliminar un match un match de un user
+     * Eliminar un match de un user con otro para todos los eventos. Devuelve 0 o el num de los matches borrados.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function delmatch(User $user, User $match)
     {
-        $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get();
+        $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get(); 
 
         if ($res->isEmpty())
         {
         
-        return 'El usuario '.$user->name.' '.$user->surnames.' no tiene ningun match con '.$match->name.' '.$match->surnames;
+        return 0;
+
+        } 
+        
+        else
+        
+        {   
+
+            foreach ($res as $m) {
+                $id = $m->id;
+                Match::destroy($id);
+
+            }
+             //El numero de matches borrados (uno por evento)
+             return count($res);
+        }
+        
+
+    }
+
+
+    /**
+     * Eliminar un todos los matches para un evento dado. Devuelve 0 o el numero de matches borrados.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function delmatchonevento(Evento $evento)
+    {
+        $res = Match::where('evento_id', $evento->id)->get(); 
+
+        if ($res->isEmpty())
+        {
+        
+        return 0;
+
         } 
         
         else
         
         {
-             $id = $res[0]->id;
-             Match::destroy($id);
-            return $match;
+            foreach ($res as $m) {
+                
+                $id = $m->id;
+                Match::destroy($id);
+            }
+             
+            
+             return count($res);
         }
         
 
@@ -359,7 +537,24 @@ class UsersController extends Controller
         return $bloqueados;
         }
         else return null;
-    }  
+    }
+
+    /**
+     * Devolver el listado de los usuarios que tienen bloqueado a un user en concreto
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function bloqueadores(User $user)
+    {
+        $bloqueadores = $user->users;
+
+        if($bloqueadores->isNotEmpty())
+        {
+        return $bloqueadores;
+        }
+        else return null;
+    }
 
     /**
      * Añadir un bloqueo a un user dede user

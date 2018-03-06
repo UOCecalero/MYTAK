@@ -15,4 +15,9 @@ class Ticket extends Model
     {
     	return $this->belongsTo(Price::class, 'price_id');
     }
+
+    public function evento()
+    {
+    	return $this->belongsTo(Evento::class, 'evento_id');
+    }
 }

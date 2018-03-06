@@ -26,7 +26,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'ranking', 'created_at', 'destacado_ini', 'destacado_fin',
+     'password', 'remember_token', 'ranking', 'created_at', 'destacado_ini', 'destacado_fin', 'aceptar', 'rechazar', 'saludar', 'birthdate', 'lat','lng'
     ];
 
 
@@ -42,6 +42,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ticket::class,'user_id');
     }
+
+    //Este campo se podría referir a los eventos que tiene el usuario como favoritos
+    //Los que han comprado se extraen mediante ticket
 
     public function eventos()
     {

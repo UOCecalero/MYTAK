@@ -19,6 +19,7 @@ class CreateMatchesTable extends Migration
             $table->unsignedBigInteger('usuario1_id');
             $table->unsignedBigInteger('usuario2_id');
             $table->unsignedBigInteger('evento_id');
+            $table->boolean('es_aceptado');
 
         });
 
