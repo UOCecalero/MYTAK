@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\RegisterController;
+use App\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,28 +15,33 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 
-Route::post('/register', 'UsersController@create'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}', 'UsersController@show'); //OK
+// Route::post('/register', 'UsersController@create'); //OK
 
-Route::middleware('auth:api')->post('/user/{user}', 'UsersController@store');
+Route::get('/token/{token}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestro
 
-Route::get('/users/exists/{FBid}', 'UsersController@exists'); //OK
+Route::middleware('auth:api')->get('/me', 'UsersController@me');
 
-Route::middleware('auth:api')->get('/users', 'UsersController@index'); //OK
+// Route::middleware(['auth:api'])->get('/user/{user}', 'UsersController@show'); //OK
+
+Route::middleware('auth:api')->post('/me', 'UsersController@store');
+
+//Route::get('/users/exists/{FBid}', 'UsersController@exists'); //OK
+
+// Route::middleware('auth:api')->get('/users', 'UsersController@index'); //OK
 
 
 //Route::middleware('auth:api')->post('/perfil', 'PerfilsController@store');
 
-Route::middleware('auth:api')->delete('/user/{user}', 'UsersController@destroy'); //OK
+Route::middleware('auth:api')->delete('/me', 'UsersController@destroy'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/ticket', 'PurchasesController@show');
+Route::middleware('auth:api')->get('/me/ticket', 'PurchasesController@show');
 
 //Route::middleware('auth:api')->patch('/user/{user}', 'UsersController@index');
 
-Route::middleware('auth:api')->get('/user/{user}/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
+Route::middleware('auth:api')->get('/me/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
 
-Route::middleware('auth:api')->get('/user/{user}/timeline/{position}/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+Route::middleware('auth:api')->get('/me/timeline/{position}/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
 
 Route::middleware('auth:api')->get('/user/{user}/ticket/{ticket}' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
@@ -43,9 +49,9 @@ Route::middleware('auth:api')->get('/user/{user}/ticket/{ticket}' /* /{position}
 
 // Route::middleware('auth:api')->delete('/user/{user}/evento/{evento}', 'UsersController@delevento'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/match', 'UsersController@match'); //OK
+Route::middleware('auth:api')->get('/me/match', 'UsersController@match'); //OK
 
-Route::middleware('auth:api')->get('/user/{user}/ticket/{ticket}/match/{user2}/{es_aceptado}', 'UsersController@addmatch'); //OK
+Route::middleware('auth:api')->get('/me/ticket/{ticket}/match/{user2}/{es_aceptado}', 'UsersController@addmatch'); //OK
 
 Route::middleware('auth:api')->delete('/user/{user}/match/{match}', 'UsersController@delmatch'); //OK
 
@@ -59,11 +65,11 @@ Route::middleware('auth:api')->post('/user/{user}/bloqueado/{bloqueado}', 'Users
 
 Route::middleware('auth:api')->delete('/user/{user}/bloqueado/{bloqueado}', 'UsersController@delbloqueado');
 
-Route::middleware('auth:api')->get('/user/{user}/empresa', 'UsersController@showEmpresa'); 
+Route::middleware('auth:api')->get('/me/empresa', 'UsersController@showEmpresa'); 
 
-Route::middleware('auth:api')->post('/user/{user}/empresa', 'EmpresasController@store'); //OK
+Route::middleware('auth:api')->post('/me/empresa', 'EmpresasController@store'); //OK
 
-Route::middleware('auth:api')->delete('/user/{user}/empresa/{empresa}', 'EmpresasController@destroy'); //OK
+Route::middleware('auth:api')->delete('/me/empresa/{empresa}', 'EmpresasController@destroy'); //OK
 
 //Route::middleware('auth:api')->patch('/user/{user}/empresa/{empresa}', 'UsersController@index');
 

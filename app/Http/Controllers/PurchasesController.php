@@ -10,6 +10,7 @@ use App\Price;
 use App\Match;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Auth;
 use Stripe\{Stripe, Charge, Customer};
 
 class PurchasesController extends Controller
@@ -170,15 +171,19 @@ class PurchasesController extends Controller
 
     }
 
-    public function show(User $user)
+    public function show()
     {
+
+     $user = Auth::user();
 
      $tickets = $user->tickets;
 
      if ($tickets->isEmpty()){ return null; }
+    
         else{ 
 
-            return $eventos; }
+            return $eventos; 
+        }
      
     }
 
@@ -187,7 +192,7 @@ class PurchasesController extends Controller
     {
         //$data= $request->json()->all();
 
-        Stripe::SetApiKey( config('services.stripe.secret') );
+        Stripe::SetApiKey( env('STRIPE_SECRET') );
 
         //$tickets = $data['numtickets'];
         $cash_total = $num_tickets * $type->precio;
