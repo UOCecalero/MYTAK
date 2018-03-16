@@ -19,7 +19,7 @@ class CreatePricesTable extends Migration
             $table->string('name');
             $table->string('description');
             $table->unsignedBigInteger('evento_id');
-            $table->unsgnedTinyInteger('precio');
+            $table->unsignedTinyInteger('precio');
         });
     }
 
