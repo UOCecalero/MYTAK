@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\User;
 use App\Empresa;
 
@@ -38,9 +39,11 @@ class EmpresasController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, User $user)
-    {
-        if( User::find($user->id) && ($user->id == $request->creator))
+    public function store(Request $request)
+    {   
+        $user = Auth::user();
+
+        if( ($user->id) && ($user->id == $request->creator))
         {
         $empresa = new Empresa;
 
@@ -113,15 +116,16 @@ class EmpresasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user, Empresa $empresa)
+    public function destroy( Empresa $empresa)
     {   
-       if ($user->empresa == $empresa )
-        {
+        $user = Auth::user();
+           if ($user->empresa == $empresa )
+            {
 
-            $empresa->delete();
-            return 1;
+                $empresa->delete();
+                return 1;
 
-        } else return 0;
+            } else return 0;
 
     }
 

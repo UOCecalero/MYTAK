@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Evento;
 use App\Match;
 use App\Empresa;
@@ -28,21 +29,124 @@ class UsersController extends Controller
         return $users;
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function me()
+    {   
+        return Auth::user();     
+    }
+
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function exists($fbid)
+    public function exists($fbid, $token)
     {
-        $user = User::where('FBid', $fbid )->get();
 
-        $resp = count($user);
+        $fb = new Facebook\Facebook([
+              'app_id' => env('FB_APP_ID'),
+              'app_secret' => env('FB_APP_SECRET'),
+              'default_access_token' => $token,
+              'default_graph_version' => 'v2.3',
+              ]);
 
-        if ($resp == 0) { return $resp; }
+        try {
+          $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email '/*,birthday **/);
+        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+          // When Graph returns an error
+          echo 'Graph returned an error: ' . $e->getMessage();
+          return 0;
+        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+          // When validation fails or other local issues
+          echo 'Facebook SDK returned an error: ' . $e->getMessage();
+          return 0;
+        }
 
-        else { return $user[0]->id; }
+        $data = json_decode($resp);
+
+        $user = User::where('FBid', $data[id] )->get();
+
+
+        //Si el usuario no existe en el sistema
+        if ( ! isset($user) ) { 
+
+            
+
+            // {
+            //   "id": "10155137218645472",
+            //   "first_name": "Edu",
+            //   "last_name": "Calero Rovira",
+            //   "gender": "male",
+            //   "picture": {
+            //     "data": {
+            //       "height": 480,
+            //       "is_silhouette": false,
+            //       "url": "https://scontent.xx.fbcdn.net/v/t1.0-1/14433114_10157499718300472_2854134556661342048_n.jpg?oh=a95fa3725b47303daca32b4b8c741bd3&oe=5B2F1AC2",
+            //       "width": 480
+            //     }
+            //   },
+            //   "email": "educalerorovira@gmail.com",
+            //   "birthday": "03/15/1985"
+            // }
+
+            $user = new User;
+
+            $user->FBid = $data['id'];
+            //$user->last_connection =$data('last_connection');
+            $user->name = $data['first_name'];
+            $user->surnames = $data['last_name'];
+            $user->gender = $data['gender'];
+            $user->email = $data['email'];
+            //$user->password = Hash::make($data['password']);
+            $user->photo = $data['photo']['url'];
+            //$user->birthdate = $data['birthdate'];
+            // $user->job = $data['job'];
+            // $user->studies = $data['studies'];
+            // $user->aceptar = $data['aceptar'];
+            // $user->saludar = $data['saludar'];
+            // $user->rechazar = $data['rechazar'];
+            // $user->destacado_ini = $data['destacado_ini'];
+            // $user->destacado_fin = $data['destacado_fin'];
+            // $user->lat = $data['lat'];
+            // $user->lng = $data['lng'];
+            // $user->genderpreference = $data['genderpreference'];
+
+            $user->ranking = function(){ 
+
+                                $collection = App\User::all(); 
+                                $avg = $collection->avg('ranking'); 
+                                $avg = $avg + $avg / 2;
+
+                                if ($avg > 89) { $avg = 89; }
+
+                                if ($avg == 0) { $avg = 45; }
+
+                                return $avg;  
+                            };
+            
+            $user->save();
+
+         }
+
+        //Generamos un token de la aplicación y lo devolvemos 
+
+        $accesstoken = $user->createToken('AccessToken')->accessToken;
+        return json($accesstoken);
+        
+
+
+        // $user = User::where('FBid', $fbid )->get();
+
+        // $resp = count($user);
+
+        // if ($resp == 0) { return $resp; }
+
+        // else { return $user[0]->id; }
 
     }
 
@@ -64,50 +168,50 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //Esta funcion se usa para crear y para modificar un usuairo 
-        $data= $request->json()->all();
+    // public function create()
+    // {
+    //     //Esta funcion se usa para crear y para modificar un usuairo 
+    //     $data= $request->json()->all();
 
-        $user = new User;
+    //     $user = new User;
 
-        $user->FBid = $data['FBid'];
-        //$user->last_connection =$data('last_connection');
-        $user->name = $data['name'];
-        $user->surnames = $data['surnames'];
-        $user->gender = $data['gender'];
-        $user->email = $data['email'];
-        $user->password = Hash::make($data['password']);
-        $user->photo = $data['photo'];
-        //$user->birthdate = $data['birthdate'];
-        $user->job = $data['job'];
-        $user->studies = $data['studies'];
-        $user->aceptar = $data['aceptar'];
-        $user->saludar = $data['saludar'];
-        $user->rechazar = $data['rechazar'];
-        $user->destacado_ini = $data['destacado_ini'];
-        $user->destacado_fin = $data['destacado_fin'];
-        $user->lat = $data['lat'];
-        $user->lng = $data['lng'];
-        $user->genderpreference = $data['genderpreference'];
+    //     $user->FBid = $data['FBid'];
+    //     //$user->last_connection =$data('last_connection');
+    //     $user->name = $data['name'];
+    //     $user->surnames = $data['surnames'];
+    //     $user->gender = $data['gender'];
+    //     $user->email = $data['email'];
+    //     $user->password = Hash::make($data['password']);
+    //     $user->photo = $data['photo'];
+    //     //$user->birthdate = $data['birthdate'];
+    //     $user->job = $data['job'];
+    //     $user->studies = $data['studies'];
+    //     $user->aceptar = $data['aceptar'];
+    //     $user->saludar = $data['saludar'];
+    //     $user->rechazar = $data['rechazar'];
+    //     $user->destacado_ini = $data['destacado_ini'];
+    //     $user->destacado_fin = $data['destacado_fin'];
+    //     $user->lat = $data['lat'];
+    //     $user->lng = $data['lng'];
+    //     $user->genderpreference = $data['genderpreference'];
 
-        $user->ranking = function(){ 
+    //     $user->ranking = function(){ 
 
-                            $collection = App\User::all(); 
-                            $avg = $collection->avg('ranking'); 
-                            $avg = $avg + $avg / 2;
+    //                         $collection = App\User::all(); 
+    //                         $avg = $collection->avg('ranking'); 
+    //                         $avg = $avg + $avg / 2;
 
-                            if ($avg > 89) { $avg = 89; }
+    //                         if ($avg > 89) { $avg = 89; }
 
-                            if ($avg == 0) { $avg = 45; }
+    //                         if ($avg == 0) { $avg = 45; }
 
-                            return $avg;  
-                        };
+    //                         return $avg;  
+    //                     };
         
-        $user->save();
+    //     $user->save();
 
-        return $user;
-    }
+    //     return $user;
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -115,8 +219,10 @@ class UsersController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(User $user, Request $request)
-    {
+    public function store(Request $request)
+    {    
+        $user = Auth::user();
+
         //Esta funcion se usa para crear y para modificar un usuairo 
         $data= $request->json()->all();
 
@@ -189,11 +295,12 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy()
     {
-        $user=User::destroy($id);
+        $user= Auth::user()
+        $user->destroy();
 
-        return $user;
+        return 1;
     }
 
 
@@ -203,14 +310,17 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function userevents(User $user)
-    {
-        $eventos = DB::table('tickets')
-                    ->where('tickets.user_id', '=', $user->id)
-                    ->join('prices', 'tickets.price_id', '=', 'prices.id')
-                    ->join('eventos','prices.evento_id','=','eventos.id')
-                    ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr')
-                    ->get();
+    public function userevents()
+    {   
+
+      $user = Auth::user();
+
+      $eventos = DB::table('tickets')
+                  ->where('tickets.user_id', '=', $user->id)
+                  ->join('prices', 'tickets.price_id', '=', 'prices.id')
+                  ->join('eventos','prices.evento_id','=','eventos.id')
+                  ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr')
+                  ->get();
 
         if ($eventos->isEmpty()){ return null; }
         else{ return $eventos; }
@@ -223,8 +333,10 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function orderevents(User $user, $position, $distance)
+    public function orderevents($position, $distance)
     {   
+
+        $user = Auth::user();
         $lat = $user->lat;
         $lng = $user->lng; 
         
@@ -399,8 +511,10 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function match(User $user)
-    {   
+    public function match()
+    {    
+
+        $user = Auth::user();
         
         $matches = $user->matches();
 
@@ -414,8 +528,9 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addmatch(User $user, Ticket $tikcet, User $user2, /**bool**/ $aceptado)
+    public function addmatch( Ticket $tikcet, User $user2, /**bool**/ $aceptado)
     {   
+        $user = Auth::user();
         
         // $res1 = $user->tickets->where('evento_id', $evento->id);
         $res2 = $user2->tickets->where('evento_id', $ticket->evento->id);
@@ -590,11 +705,11 @@ class UsersController extends Controller
      * @param  int  $user
      * @return \Illuminate\Http\Response
      */
-    public function showEmpresa(User $user)
+    public function showEmpresa()
     {
         
         
-        return $user->empresa;
+        return Auth::user()->empresa;
 
     } 
 

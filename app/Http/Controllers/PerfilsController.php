@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Perfil;
 
+
 class PerfilsController extends Controller
 {
     /**
