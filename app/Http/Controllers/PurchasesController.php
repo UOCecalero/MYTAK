@@ -34,7 +34,7 @@ class PurchasesController extends Controller
     // 	return 1;
     // }
 
-    public function ordermembers(User $user, Ticket $ticket/*, $position*/) //Se ha modificado y devuelve el perfil actual y el siguiente, ya que al evaluar y hacer de nuevo la llamada sin ningun buffer, los ya evaluados desaparecen y solo nos interesan los dos primeros.
+    public function ordermembers( Ticket $ticket/*, $position*/) //Se ha modificado y devuelve el perfil actual y el siguiente, ya que al evaluar y hacer de nuevo la llamada sin ningun buffer, los ya evaluados desaparecen y solo nos interesan los dos primeros.
     {
         //1. Buscamos los miembros que tienen tickets a dicho evento
         //2. Eliminamos los miembros con los que ya hemos echo match (positivo o negativo)
@@ -42,6 +42,7 @@ class PurchasesController extends Controller
         //5. Hacemos el filtrado por edad
         //6. Evaluamos
 
+        $user = Auth::user();
         $evento = $ticket->evento;
         $tickets = $evento->tickets;
         $users = collect([]);
@@ -167,7 +168,7 @@ class PurchasesController extends Controller
             
 
             //return $sorted->values()->get($position - 1); //La resta es para que empiece a indexar en 1
-            return $sorted->slice(0,2)->values()->all();
+            return $sorted->slice(0,2)->values(); //Devolvemos la primera y siguiente posición de las que no se han evaluado. Al evaluar, se lanza de nuevo la petición para volver a evaluar y poner la anterior delante.
 
     }
 
@@ -182,7 +183,7 @@ class PurchasesController extends Controller
     
         else{ 
 
-            return $eventos; 
+            return $tickets; 
         }
      
     }
@@ -192,7 +193,7 @@ class PurchasesController extends Controller
     {
         //$data= $request->json()->all();
 
-        Stripe::SetApiKey( env('STRIPE_SECRET') );
+        Stripe::SetApiKey( config('services.stripe.secret') );
 
         //$tickets = $data['numtickets'];
         $cash_total = $num_tickets * $type->precio;

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 class ArchiveController extends Controller
 {
 
-	{
+	
     /**
      * Display a listing of the resource.
      *
