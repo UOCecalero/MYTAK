@@ -126,6 +126,7 @@ class UsersController extends Controller
             // $user->lng = $data['lng'];
             if ( $data['gender']== 'male') {
 
+
               $user->genderpreference = 'female';
 
             }  else {
@@ -133,18 +134,18 @@ class UsersController extends Controller
                 $user->genderpreference = 'male';
             }
 
-            $user->ranking = $average = function(){ 
+            /******************************** Calculamos el avg **********************/
+            $collection = User::all(); 
+            $avg = $collection->avg('ranking'); 
+            $avg = $avg + $avg / 2;
 
-                                $collection = App\User::all(); 
-                                $avg = $collection->avg('ranking'); 
-                                $avg = $avg + $avg / 2;
+            if ($avg > 89) { $avg = 89; }
 
-                                if ($avg > 89) { $avg = 89; }
+            if ($avg == 0) { $avg = 45; }
 
-                                if ($avg == 0) { $avg = 45; }
+            /***************************************************************************/
 
-                                return $avg;  
-                            };
+            $user->ranking = $avg;
             
             $user->save();
 
