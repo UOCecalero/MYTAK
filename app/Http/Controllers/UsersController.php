@@ -11,6 +11,7 @@ use App\Match;
 use App\Empresa;
 use App\Bloqueado;
 use App\User;
+use App\Ticket;
 use Carbon\Carbon;
 //use Stripe\{Stripe, Charge, Customer}
 
@@ -45,15 +46,19 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function exists($fbid, $token)
+    public function exists($token)
     {
 
-        $fb = new Facebook\Facebook([
-              'app_id' => env('FB_APP_ID'),
-              'app_secret' => env('FB_APP_SECRET'),
+        $fb = new \Facebook\Facebook([
+              'app_id' => '643164375870720',
+              'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
               'default_access_token' => $token,
-              'default_graph_version' => 'v2.3',
+              'default_graph_version' => 'v2.10',
               ]);
+
+        
+
+
 
         try {
           $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email '/*,birthday **/);
@@ -67,15 +72,20 @@ class UsersController extends Controller
           return 0;
         }
 
-        $data = json_decode($resp);
+        //return var_dump($resp)
 
-        $user = User::where('FBid', $data[id] )->get();
+        $data = $resp->getDecodedBody();
 
+        $collection = User::where('FBid', $data['id'] )->get();
+
+        $number = $collection->count();
+
+
+        if ($number > 1) { throw new Exception("Error: Many users with this FBid", 1);
+        }
 
         //Si el usuario no existe en el sistema
-        if ( ! isset($user) ) { 
-
-            
+        if ( ! $number ) { 
 
             // {
             //   "id": "10155137218645472",
@@ -133,10 +143,12 @@ class UsersController extends Controller
 
          }
 
-        //Generamos un token de la aplicación y lo devolvemos 
+          else { $user = $collection[0]; }
 
-        $accesstoken = $user->createToken('AccessToken')->accessToken;
-        return json($accesstoken);
+        
+        if( isset( $user->tokens[0]) ){ $user->tokens[0]->delete(); };
+        $accesstoken = $user->createToken('accessToken')->accessToken;
+        return $accesstoken;
         
 
 
@@ -150,18 +162,18 @@ class UsersController extends Controller
 
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function email($fbid)
-    {
-        $user = User::where('FBid', $fbid )->get();
+    // /**
+    //  * Display a listing of the resource.
+    //  *
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function email($fbid)
+    // {
+    //     $user = User::where('FBid', $fbid )->get();
 
 
-        return $user->email;
-    }
+    //     return $user->email;
+    // }
 
     /**
      * Show the form for creating a new resource.
@@ -250,21 +262,21 @@ class UsersController extends Controller
         return $user;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($fbid)
-    {
-        // $user = User::where('FBid', $fbID )->get();
+    // /**
+    //  * Display the specified resource.
+    //  *
+    //  * @param  int  $id
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function show($fbid)
+    // {
+    //     // $user = User::where('FBid', $fbID )->get();
 
-        // return $user;
+    //     // return $user;
 
-        $user = User::find($fbid);
-        return $user;
-    }
+    //     $user = User::find($fbid);
+    //     return $user;
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -297,8 +309,8 @@ class UsersController extends Controller
      */
     public function destroy()
     {
-        $user= Auth::user()
-        $user->destroy();
+        $user=Auth::user();
+        $user->delete();
 
         return 1;
     }
@@ -528,11 +540,11 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addmatch( Ticket $tikcet, User $user2, /**bool**/ $aceptado)
+    public function addmatch(Ticket $ticket,User $user2, $aceptado)
     {   
         $user = Auth::user();
         
-        // $res1 = $user->tickets->where('evento_id', $evento->id);
+        //Comprobamos que usuario receptor del match tiene tickets para el mismo evento
         $res2 = $user2->tickets->where('evento_id', $ticket->evento->id);
 
         if( /* $res1->isEmpty() === 'true' OR */ $res2->isEmpty() === 'true'  )
@@ -540,6 +552,7 @@ class UsersController extends Controller
             return 'Alguno o ambos usuarios no tienen tickets para ese evento';
         }
 
+        //Comprobamos que no hayamos evaluado ya a ese usuario antes (en cualquier evento)
         else { 
                 $res = Match::where('usuario1_id', $user->id)
                 ->where('usuario2_id', $user2->id)
@@ -551,10 +564,11 @@ class UsersController extends Controller
                 $match = new Match;
                 $match->usuario1_id = $user->id;
                 $match->usuario2_id = $user2->id;
-                $match->evento_id = $evento->id;
+                $match->evento_id = $ticket->evento->id;
                 $match->es_aceptado = $aceptado; //hay que asegurar que esto es un booleano
                 $match->save();
 
+                    //Evaluamos parámetros de rankeo
                     if($aceptado)
                     {
 
@@ -576,8 +590,10 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delmatch(User $user, User $match)
-    {
+    public function delmatch(User $match)
+    {   
+        $user = Auth::user();
+
         $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get(); 
 
         if ($res->isEmpty())
@@ -643,8 +659,9 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueados(User $user)
-    {
+    public function bloqueados()
+    {   
+        $user = Auth::user();
         $bloqueados = $user->bloqueados;
 
         if($bloqueados->isNotEmpty())
@@ -660,8 +677,9 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueadores(User $user)
-    {
+    public function bloqueadores()
+    {   
+        $user = Auth::user();
         $bloqueadores = $user->users;
 
         if($bloqueadores->isNotEmpty())
@@ -677,10 +695,13 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addbloqueado(User $user, User $bloqueado)
-    {   
+    public function addbloqueado(User $bloqueado)
+    {    
+        $user = Auth::user();
 
         $user->bloqueados()->attach($bloqueado->id);
+
+        return 1;
 
     }
 
@@ -690,9 +711,9 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delbloqueado(User $user, User $bloqueado)
+    public function delbloqueado( User $bloqueado)
     {
-        
+        $user = Auth::user();
         $user->bloqueados()->detach($bloqueado->id);
 
         return 1;
@@ -707,8 +728,7 @@ class UsersController extends Controller
      */
     public function showEmpresa()
     {
-        
-        
+              
         return Auth::user()->empresa;
 
     } 

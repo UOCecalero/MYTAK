@@ -17,7 +17,7 @@ class SelfUser
      */
     public function handle($request, Closure $next)
     {
-        // $auth = User::find(86);
+        
         $auth = Auth::user();
         $user = User::find($request->user);
 
