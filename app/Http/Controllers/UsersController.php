@@ -104,7 +104,7 @@ class UsersController extends Controller
             //   "birthday": "03/15/1985"
             // }
 
-            $user = new User;
+            $user = new User();
 
             $user->FBid = $data['id'];
             //$user->last_connection =$data('last_connection');
@@ -113,7 +113,7 @@ class UsersController extends Controller
             $user->gender = $data['gender'];
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
-            $user->photo = $data['photo']['url'];
+            $user->photo = $data['picture']['data']['url'];
             //$user->birthdate = $data['birthdate'];
             // $user->job = $data['job'];
             // $user->studies = $data['studies'];
@@ -124,9 +124,16 @@ class UsersController extends Controller
             // $user->destacado_fin = $data['destacado_fin'];
             // $user->lat = $data['lat'];
             // $user->lng = $data['lng'];
-            // $user->genderpreference = $data['genderpreference'];
+            if ( $data['gender']== 'male') {
 
-            $user->ranking = function(){ 
+              $user->genderpreference = 'female';
+
+            }  else {
+
+                $user->genderpreference = 'male';
+            }
+
+            $user->ranking = $average = function(){ 
 
                                 $collection = App\User::all(); 
                                 $avg = $collection->avg('ranking'); 
