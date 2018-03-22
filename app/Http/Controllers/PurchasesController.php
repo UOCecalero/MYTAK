@@ -222,7 +222,7 @@ class PurchasesController extends Controller
 
 
             // Creamos el ticket
-            $ticket = new Ticket;
+            $ticket = new Ticket();
 
             //creamos un radom para la transacción
             $random = random_int(1,65535);
