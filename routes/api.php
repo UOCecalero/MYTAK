@@ -113,7 +113,7 @@ Route::middleware('auth:api')->get('/evento/{evento}', 'EventosController@show')
 
 // Route::middleware('auth:api')->post('/customer/{user}','PurchasesController@newCustomer');
 
-Route::middleware('auth:api')->get('/customer/{user}/{type}/{num_tickets}/{card_token}','PurchasesController@store');
+Route::middleware('auth:api')->get('/me/get/{type}/{num_tickets}/{card_token}','PurchasesController@store');
 
 Route::get('/validate/{hash}','PurchasesController@validateTicket');
 

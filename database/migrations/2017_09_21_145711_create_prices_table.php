@@ -19,7 +19,7 @@ class CreatePricesTable extends Migration
             $table->string('name');
             $table->string('description');
             $table->unsignedBigInteger('evento_id');
-            $table->unsignedTinyInteger('precio');
+            $table->unsignedMediumInteger('precio'); // 2,50 se escribe 250
         });
     }
 

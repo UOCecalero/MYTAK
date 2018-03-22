@@ -76,7 +76,7 @@ class UsersController extends Controller
 
         $data = $resp->getDecodedBody();
 
-        $collection = User::where('FBid', $data['id'] )->get();
+        $collection = User::where('email', $data['email'] )->get();
 
         $number = $collection->count();
 

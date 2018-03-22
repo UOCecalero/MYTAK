@@ -189,9 +189,11 @@ class PurchasesController extends Controller
     }
 
     //Esta función no estara de momento públicamente publicada en la apiRest
-    public function store(User $user, Price $type, $num_tickets, $card_token )
+    public function store( Price $type, $num_tickets, $card_token )
     {
         //$data= $request->json()->all();
+
+        $user = Auth::user();
 
         Stripe::SetApiKey( config('services.stripe.secret') );
 
