@@ -38,8 +38,9 @@ class CreateUsersTable extends Migration
             $table->float('lat',10,6)->nullable();
             $table->float('lng',10,6)->nullable();
             $table->string('genderpreference',6); //options: male, female o both
-            $table->tinyInteger('inagepreference')->default(18);
-            $table->tinyInteger('outagepreference')->default(99);
+            $table->unsignedtinyInteger('inagepreference')->default(18);
+            $table->unsignedtinyInteger('outagepreference')->default(99);
+            $table->unsignedTinyInteger('eventdistance')->default(25);
 
 
         });

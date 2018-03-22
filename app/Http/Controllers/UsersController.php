@@ -361,7 +361,7 @@ class UsersController extends Controller
         $lng = $user->lng; 
         
 
-        //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto**/ }
+        //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto -> varable en la App Móvil**/ }
 
             $filtered = Evento::all()->filter(function ($evento) use ($lat, $lng, $distance){
                             $actual = 3959 * acos(
