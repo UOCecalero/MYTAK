@@ -1,4 +1,4 @@
-//var app = require('express')();
+var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 const RedisServer = require('redis-server');
@@ -25,13 +25,13 @@ const redis = new Redis();
 
     //Whenever someone connects this gets executed
     io.on('connection', function(socket) {
-       console.log('A user connected');
+       console.log('A user connected in socket: '+socket);
       var sessionid = socket.id;
 
-       socket.on('clientUser', function(data) {
-          console.log("User: "+data+" SocketID: "+sessionid);
-          redis.set(data, sessionid);
-          var userNAME = data;
+       socket.on('clientID', function(id) {
+          console.log("User: "+id+" SocketID: "+sessionid);
+          redis.set(id, "socket:"+sessionid);
+          var userID = id;
 
            });
 
@@ -76,6 +76,6 @@ const redis = new Redis();
        });
     });
 
-    http.listen(3000, function() {
-       console.log('listening on *:3000');
+    http.listen(61000, function() {
+       console.log('listening on *:61000');
     });

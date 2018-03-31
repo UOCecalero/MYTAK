@@ -61,7 +61,7 @@ class User extends Authenticatable
                 ->where('m.usuario1_id', $id_ref)
                 ->where('matches.usuario2_id', $id_ref)
                 ->join('users', 'users.id', '=', 'matches.usuario1_id')
-                ->select('users.id as id','users.name as name','users.surnames as surnames', 'users.photo as photo','users.job as job','users.studies as studies','users.lat as lat','users.lng as lng')
+                ->select('users.id as id','users.name as name','users.surnames as surnames','users.last_connection as last_connection'i ,'users.photo as photo','users.job as job','users.studies as studies','users.lat as lat','users.lng as lng')
                 ->get();
 
      //Esta función llama a la tabla matches y busca las tuplas que tienen como valor al usuario del que queremos saber sus matches. Una vez lo tiene hace un join donde la columna usuario1 = usuario2 de forma que sabemos a su vez si alguno de los matches del usuario a elegido a correspondido al usuario. Cuando sabe si hay algun usuario hace un join con la tabla perfiles para extraer sus datos.

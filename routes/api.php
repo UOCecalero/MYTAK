@@ -117,6 +117,10 @@ Route::middleware('auth:api')->get('/me/get/{type}/{num_tickets}/{card_token}','
 
 Route::get('/validate/{hash}','PurchasesController@validateTicket');
 
+/********************************* Message interface *******************************************/
+
+Route::middleware('auth:api')->post('/message/{id}','MessageControler@send');
+
 /********************************* FileTransfer interface *******************************************/
 
 Route::post('/upload/{user}','ArchiveController@store');
