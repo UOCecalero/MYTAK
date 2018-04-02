@@ -36,6 +36,28 @@ class MessageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function get()
+    {
+        $me = Auth::user();
+
+        $emitidos = $me->messages->where('caducado',0);
+        $recibidos = Message::where('caducado',0)->where('receptor', $me->id)->get();
+        
+        //marca el checked
+        $recibidos->map(function ($item, $key) { $item['checked'] = 1; $item->save; return $item; });
+
+        $respuesta = $emitidos->concat($recibidos);
+
+        return $respuesta->sortBy(function ($msg, $key) { return $msg['created_at']; })->values();
+
+
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function send(Request $request, User $user)
     {
 
