@@ -93,4 +93,9 @@ class User extends Authenticatable
     {
         return $this->morphedByMany(Empresa::class, 'bloqueador');
     }
+
+    public function archives()
+    {
+        return $this->hasMany(Archive::class, 'user_id')
+    }
 }

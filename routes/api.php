@@ -125,4 +125,4 @@ Route::middleware('auth:api')->get('/me/messages','MessageController@get');
 
 /********************************* FileTransfer interface *******************************************/
 
-Route::post('/upload/{user}','ArchiveController@store');
+Route::middleware('auth:api')->post('/uploadavatar','ArchiveController@store');
