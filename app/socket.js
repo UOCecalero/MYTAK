@@ -107,5 +107,5 @@ redis.subscribe('messages', 'alerts', 'admin', function (err, count) {
     });
 
     http.listen(61000, function() {
-       console.log('listening on *:61000');
+       console.log('listening on *:61001');
     });
