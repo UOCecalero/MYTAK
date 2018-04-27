@@ -1,6 +1,7 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+// var app = require('express')();
+// var http = require('http').Server(app);
+// var io = require('socket.io')(http);
+var io = require('socket.io').listen(61000);
 const RedisServer = require('redis-server');
 var Redis = require("ioredis");
  
@@ -99,12 +100,11 @@ redis.subscribe('messages', 'alerts', 'admin', function (err, count) {
 
             //Hacer un ping a todos los usuarios de la lista de sockets o bien comparar todos los sockets conectados con los que tenemos en la lista
 
-
-
          });
 
 
     });
+
 
     http.listen(61000, function() {
        console.log('listening on *:61001');

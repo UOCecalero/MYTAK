@@ -17,10 +17,11 @@ class CreateMessagesTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->unsignedBigInteger('conversation'); //Hace referencia a un match 
-            $table->boolean('checked');
+            $table->boolean('checked')->default(0);
             $table->unsignedBigInteger('emisor');
             $table->unsignedBigInteger('receptor');
             $table->text('texto');
+            $table->boolean('caducado')->default(0);
         });
     }
 

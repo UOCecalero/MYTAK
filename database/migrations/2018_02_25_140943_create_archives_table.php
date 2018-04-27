@@ -18,7 +18,8 @@ class CreateArchivesTable extends Migration
             $table->integer('user_id');
             $table->timestamps();
             $table->string('path');
-            $table->tinyinteger('position');
+            $table->tinyinteger('position')->default(1);
+            $table->tinyinteger('type')->default(1);
         });
     }
 
