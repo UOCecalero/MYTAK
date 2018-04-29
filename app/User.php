@@ -96,6 +96,6 @@ class User extends Authenticatable
 
     public function archives()
     {
-        return $this->hasMany(Archive::class, 'user_id')
+        return $this->hasMany(Archive::class, 'user_id');
     }
 }
