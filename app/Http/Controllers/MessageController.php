@@ -39,18 +39,20 @@ class MessageController extends Controller
     public function get(User $receptor)
     {
         $me = Auth::user();
-
-        $emitidos = $me->messages->where('caducado',0)->where('receptor', $receptor->id);
-        $recibidos = Message::where('caducado',0)->where('receptor', $me->id)->where('emisor', $me->id)->get();
+	
+	$emitidos = $me->messages->where('caducado',0)->where('receptor', $receptor->id);
+        $recibidos = Message::all()->where('caducado',0)->where('receptor', $me->id)->where('emisor', $receptor->id);
         
         //marca el checked
         $recibidos->map(function ($item, $key) { $item['checked'] = 1; $item->save; return $item; });
 
         $respuesta = $emitidos->concat($recibidos);
         //Añade una columna que indica si el mensaje se debe mostrar como emisor o como receptor. Se usa en la aplicación para dar formato al mostrar la conversación
-        $filtered->map(function($msg) use ($respuesta){
-            if ($respuesta->emisor === $me->id && $respuesta->receptor === $receptor->id ) { $msg['whois'] = "emisor"; }
-            if ($respuesta->emisor === $receptor->id && $respuesta->receptor === $me->id) { $msg['whois'] = "receptor"; }
+        $filtered = $respuesta->map(function($msg) use ($respuesta, $me, $receptor){
+            if ($msg->emisor === $me->id && $msg->receptor === $receptor->id ) { $msg['whois'] = "emisor"; }
+            if ($msg->emisor === $receptor->id && $msg->receptor === $me->id) { $msg['whois'] = "receptor"; }
+	return $msg;
+});
 
         return $filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values();
 
