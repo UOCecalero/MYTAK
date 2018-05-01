@@ -73,9 +73,7 @@ class User extends Authenticatable
      //Solo muestra los mensajes emitidos por el usuario. No los recibidos. Para buscarlos  Messages::all()->where('receptor', $id )
      public function messages()
      {
-
         return $this->hasMany(Message::class, 'emisor');
-
      }
 
 

@@ -121,7 +121,7 @@ Route::get('/validate/{hash}','PurchasesController@validateTicket');
 
 Route::middleware('auth:api')->post('/message/{user}','MessageController@send');
 
-Route::middleware('auth:api')->get('/me/messages','MessageController@get');
+Route::middleware('auth:api')->get('/me/messages/{receptor}','MessageController@get');
 
 /********************************* FileTransfer interface *******************************************/
 
