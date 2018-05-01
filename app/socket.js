@@ -1,7 +1,7 @@
 // var app = require('express')();
 // var http = require('http').Server(app);
 // var io = require('socket.io')(http);
-var io = require('socket.io').listen(61000);
+var io = require('socket.io').listen(61001);
 const RedisServer = require('redis-server');
 var Redis = require("ioredis");
  
@@ -106,6 +106,6 @@ redis.subscribe('messages', 'alerts', 'admin', function (err, count) {
     });
 
 
-    http.listen(61000, function() {
-       console.log('listening on *:61001');
-    });
+   // http.listen(61000, function() {
+    //   console.log('listening on *:61001');
+   // });
