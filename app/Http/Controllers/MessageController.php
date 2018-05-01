@@ -41,6 +41,7 @@ class MessageController extends Controller
         $me = Auth::user();
 
         $emitidos = $me->messages->where('caducado',0)->where('receptor', $receptor->id);
+
         $recibidos = Message::all()->where('caducado',0)->where('receptor', $me->id)->where('emisor', $receptor->id);
         
         //marca el checked
@@ -49,8 +50,9 @@ class MessageController extends Controller
         $respuesta = $emitidos->concat($recibidos);
         //Añade una columna que indica si el mensaje se debe mostrar como emisor o como receptor. Se usa en la aplicación para dar formato al mostrar la conversación
         $filtered = $respuesta->map(function($msg) use ($respuesta, $me, $receptor){
-            if ($msg->emisor == $me->id && $msg->receptor == $receptor->id ) { $msg['whois'] = "emisor"; }
-            if ($msg->emisor == $receptor->id && $msg->receptor == $me->id) { $msg['whois'] = "receptor"; }
+
+            if ($msg->emisor === $me->id && $msg->receptor === $receptor->id ) { $msg['whois'] = "emisor"; }
+            if ($msg->emisor === $receptor->id && $msg->receptor === $me->id) { $msg['whois'] = "receptor"; }
             $time = $msg->created_at;
             $msg["time"] = $time->toTimeString();
             return $msg;
