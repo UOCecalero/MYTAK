@@ -68,7 +68,7 @@ class PurchasesController extends Controller
         //Buscamos todos los match anteriores (positivos y negativos) a dicho evento.
         $matches = Match::where('usuario1_id', $user->id)->where('evento_id', $evento->id );     
         $matched = $matches->pluck('usuario2_id');
-        $matched = User::find($matched);
+        $matched = User::find($matched); //Le podemos pasar un array a find
         $torank = $users->diff($matched);
 
         //Filtramos por género
@@ -97,6 +97,8 @@ class PurchasesController extends Controller
 
         //Rankeo de actividad y sociabiliadad
         $torank->map(function($element){
+
+            
 
             $current = new Carbon();
             $last = new Carbon($element->last_connection);

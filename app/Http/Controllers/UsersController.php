@@ -548,7 +548,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function addmatch(Ticket $ticket,User $user2, $aceptado)
+    public function addmatch(Ticket $ticket, User $user2, $aceptado)
     {   
         $user = Auth::user();
         
@@ -586,9 +586,22 @@ class UsersController extends Controller
 
                         $user->rechazar = $user->rechazar ++;
                     }
+                
+              //Comprobamos si hay match recíproco. Si lo hay tenemos que devolver un número mayor de 1 para que la aplicación lance un aviso
+
+              $hayMatch = Match::where('usuario2_id', $user->id)
+                ->where('usuario1_id', $user2->id)
+                ->get();
+
+                if( $hayMatch->isEmpty() ){ return 1; } else { return 2; } 
+
                 }
 
-            return 1;
+          
+
+
+
+            
         }
     }
 

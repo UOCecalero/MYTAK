@@ -81,7 +81,12 @@ class MessageController extends Controller
 
         if ( $me->matches()->where('id', $user->id ) ){
 
-            Redis::publish('messages', json_encode(['emisor' => $me->id, 'receptor' => $user->id, 'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 'text' => $data['texto'] ]));
+            Redis::publish('messages', json_encode([
+                'emisor' => $me->id, 
+                'receptor' => $user->id, 
+                'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 
+                'text' => $data['texto'];
+            ]));
 
 
             
