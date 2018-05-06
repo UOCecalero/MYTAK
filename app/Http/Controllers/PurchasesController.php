@@ -97,10 +97,12 @@ class PurchasesController extends Controller
 
         //Rankeo de actividad y sociabiliadad
         $torank->map(function($element){
+	    
+            $element->archives->where('type',1); //Crea un campo pictures donde estan las url de las imágenes
 
-            
 
             $current = new Carbon();
+
             $last = new Carbon($element->last_connection);
 
             //Rankeo de actividad
