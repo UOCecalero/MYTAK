@@ -363,7 +363,18 @@ class UsersController extends Controller
 
         //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto -> varable en la App Móvil**/ }
 
-            $filtered = Evento::all()->filter(function ($evento) use ($lat, $lng, $distance){
+            //Esta version antigua de filtered, no devolvía los prices de cada evento
+
+            // $filtered = Evento::all()->filter(function ($evento) use ($lat, $lng, $distance){
+            //                 $actual = 3959 * acos(
+            //                 cos(deg2rad($lat)) * cos(deg2rad($evento->lat))
+            //                 * cos(deg2rad($evento->lng) - deg2rad($lng))
+            //                 + sin(deg2rad($lat)) * sin(deg2rad($evento->lat))
+            //             );
+
+            $all_events = Evento::with('prices')->get();
+
+            $filtered = $all_events->filter(function ($evento) use ($lat, $lng, $distance){
                             $actual = 3959 * acos(
                             cos(deg2rad($lat)) * cos(deg2rad($evento->lat))
                             * cos(deg2rad($evento->lng) - deg2rad($lng))

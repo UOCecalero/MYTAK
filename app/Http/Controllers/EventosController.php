@@ -72,9 +72,9 @@ class EventosController extends Controller
      */
     public function show(Evento $evento)
     {
-        //$evento = Evento::find($id);
+        return $evento = Evento::find($evento->$id)->with('prices')->get();
 
-        return $evento;
+        //return $evento;
     }
 
     /**

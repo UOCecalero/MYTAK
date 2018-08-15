@@ -85,8 +85,8 @@ class MessageController extends Controller
                 'emisor' => $me->id, 
                 'receptor' => $user->id, 
                 'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 
-                'text' => $data['texto'];
-            ]));
+                'text' => $data['texto']
+            ]) );
 
 
             
