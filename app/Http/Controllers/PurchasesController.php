@@ -199,6 +199,12 @@ class PurchasesController extends Controller
 
         $user = Auth::user();
 
+        //Calculamos las entradas restantes que quedarán si se completa el proceso
+        //Si el numero de entradas restantes es menor que 0 significa que no hay entradas suficientes para esa demanda y devuelve un numero negativo con el numero de entradas que faltan. Se puede usar ese numero para indicar al usuario las que faltan.
+        $entradas_restantes = $num_tickets - $type->availables;
+
+        if( $entradas_restantes < 0) { return $entradas_restantes;  }
+
         Stripe::SetApiKey( config('services.stripe.secret') );
 
         //$tickets = $data['numtickets'];
@@ -249,6 +255,8 @@ class PurchasesController extends Controller
             $ticket->used_limit = 1;
 
             $ticket->save();
+
+            $type->availables --;
 
         }
 
