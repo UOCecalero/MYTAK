@@ -339,7 +339,7 @@ class UsersController extends Controller
                   ->where('tickets.user_id', '=', $user->id)
                   ->join('prices', 'tickets.price_id', '=', 'prices.id')
                   ->join('eventos','prices.evento_id','=','eventos.id')
-                  ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr')
+                  ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr', 'tickets.hash')
                   ->get();
 
         if ($eventos->isEmpty()){ return null; }
