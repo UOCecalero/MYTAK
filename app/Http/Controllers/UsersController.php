@@ -47,8 +47,8 @@ class UsersController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function exists($token)
-    {
-
+    {   
+        //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
               'app_id' => '643164375870720',
               'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
@@ -59,7 +59,7 @@ class UsersController extends Controller
         
 
 
-
+        //Con lo que devuelve Faecbook podemos hacer una llamada para extraer datos
         try {
           $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email '/*,birthday **/);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {

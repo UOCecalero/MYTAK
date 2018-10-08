@@ -44,10 +44,11 @@ class MessageController extends Controller
 
         $recibidos = Message::all()->where('caducado',0)->where('receptor', $me->id)->where('emisor', $receptor->id);
         
-        //marca el checked
+        //marca el checked antes de entregar los mensajes
         $recibidos->map(function ($item, $key) { $item['checked'] = 1; $item->save; return $item; });
 
         $respuesta = $emitidos->concat($recibidos);
+        
         //Añade una columna que indica si el mensaje se debe mostrar como emisor o como receptor. Se usa en la aplicación para dar formato al mostrar la conversación
         $filtered = $respuesta->map(function($msg) use ($respuesta, $me, $receptor){
 
@@ -81,15 +82,19 @@ class MessageController extends Controller
 
         if ( $me->matches()->where('id', $user->id ) ){
 
+
             Redis::publish('messages', json_encode([
                 'emisor' => $me->id, 
-                'receptor' => $user->id, 
+                //'receptor' => $user->id,
+                /**
+                    Lo manda al token. Cuando el usuario se conecta se identifica con el token para recibir los mensajes. Por lo tanto la unica forma de suplantar al usuario es tener el token. En caso de que alguien lo consiguiese, caduca.
+                **/
+                'receptor' => $user->tokens[0],
                 'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 
                 'text' => $data['texto']
             ]) );
 
 
-            
 
             $message = new Message();
 
