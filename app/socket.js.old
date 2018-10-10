@@ -1,0 +1,124 @@
+// var app = require('express')();
+// var http = require('http').Server(app);
+// var io = require('socket.io')(http);
+var io = require('socket.io').listen(61001);
+const RedisServer = require('redis-server');
+var Redis = require("ioredis");
+ 
+
+/********************* PARTE CLIENTE REDIS DE NODE ***********************************/
+
+// Inicializamos el servidor redis
+const redisserver = new RedisServer(6379);
+
+//Si el servidor redis arranca sin problemas entonces
+redisserver.open((err) => {
+  if (err === null) { 
+  //Si el servidor redis da error mostramos el error
+  } else {console.log(err);}
+  });
+
+//Creamos el cliente redis
+const redis = new Redis();
+redis.subscribe('messages', 'alerts', 'admin', function (err, count) {
+  // Now we are subscribed to the 'messages', 'alerts' and 'admin' channels.
+  // `count` represents the number of channels we are currently subscribed to.
+});
+
+    //   app.get('/', function(req, res) {
+    //   res.sendFile(__dirname + '/index.html');
+    // });
+
+
+    //Cuando llege un mensaje al buffer redis de alguno de los canales a los que estamos suscritos nos dice el mensaje que ha recibido y por que canal
+    redis.on('message', function (channel, message) {
+                  // Receive message Hello world! from channel news
+                  // Receive message Hello again! from channel music
+                  console.log('Receive message %s from channel %s', message, channel);
+                  
+        });
+
+/******************************** PARTE MÓDULO SOCKET DE NODE ***********************************/
+
+    //Cuando alguien se conecta algun socket de node (mediante la librería socket.io) nos indica su socket
+    io.on('connection', function(socket) {
+       console.log('A user connected in socket: '+socket);
+      var sessionid = socket.id; //Guardamos en una variable la id del socket
+
+        //Esperamos un evento del tipo clientConnected que nos indicará la id del usuario del socket que se ha connectado a ese socket
+        //Podemos almacenar en redis una pila de claves valor idUsuario - idSocket para saber en que socket esta cada usuario
+         socket.on('clientConnected', function(id) {
+            console.log("User: "+id+" SocketID: "+sessionid);
+            redis.set(id, sessionid);
+            var userID = id;
+
+             });
+
+         //Aqui usaremos un evento del tipo message a través del cual recibiremos mensajes para distintos canales
+         redis.on('message', function (channel, message) {
+                  // Receive message Hello world! from channel news
+                  // Receive message Hello again! from channel music
+                  console.log('Receive message %s from channel %s', message, channel);
+                  
+
+
+                switch(channel){
+
+                  //Si el canal para el que han sido enviados es el de mensajes buscaremos en el campo receptor al destinatario.
+                  //Si el destinatario consta en la pila redis, podremos obtener el socket donde se encuentra y le podemos mandar el mensaje
+                  case 'messages':  
+
+
+                                    redis.get(message.receptor, function(err, result){
+                        
+                                          if (err){ console.log("Error :"+err); }
+                                          else { 
+
+                                                var destinyID = result;
+                                                console.log("Message to socket: "+result);
+                                                socket.broadcast.to(destinyID).emit('privateMessage', message);
+                                          }    
+
+                                    });
+
+
+
+                  break;
+
+                  case 'alerts':
+
+                                  socket.broadcast.emit('alertMessage', message);
+
+
+                  break;
+
+                  // case 'admin':
+
+                  //                 socket.broadcast.emit('adminMessage', message);
+
+
+                  // break;
+
+                };
+
+
+        });
+
+         //Whenever someone disconnects this piece of code executed
+         socket.on('disconnect', function () {
+            // redis.del();
+            console.log('A user disconnected');
+            
+
+
+            //Hacer un ping a todos los usuarios de la lista de sockets o bien comparar todos los sockets conectados con los que tenemos en la lista
+
+         });
+
+
+    });
+
+
+   // http.listen(61000, function() {
+    //   console.log('listening on *:61001');
+   // });

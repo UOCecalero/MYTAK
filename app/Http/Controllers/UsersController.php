@@ -47,8 +47,8 @@ class UsersController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function exists($token)
-    {
-
+    {   
+        //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
               'app_id' => '643164375870720',
               'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
@@ -59,7 +59,7 @@ class UsersController extends Controller
         
 
 
-
+        //Con lo que devuelve Faecbook podemos hacer una llamada para extraer datos
         try {
           $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email '/*,birthday **/);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
@@ -339,7 +339,7 @@ class UsersController extends Controller
                   ->where('tickets.user_id', '=', $user->id)
                   ->join('prices', 'tickets.price_id', '=', 'prices.id')
                   ->join('eventos','prices.evento_id','=','eventos.id')
-                  ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr','tickets.hash')
+                  ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr', 'tickets.hash')
                   ->get();
 
         if ($eventos->isEmpty()){ return null; }

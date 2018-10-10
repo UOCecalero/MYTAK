@@ -5,100 +5,104 @@ var io = require('socket.io').listen(61001);
 const RedisServer = require('redis-server');
 var Redis = require("ioredis");
  
-// Inicializamos el servidor redis
-const redisserver = new RedisServer(6379);
+// // Inicializamos el servidor redis
+// const redisserver = new RedisServer(6379);
 
-//Si el servidor redis arranca sin problemas entonces
-redisserver.open((err) => {
-  if (err === null) { 
-  //Si el servidor redis da error mostramos el error
-  } else {console.log(err);}
-  });
-
-//Creamos el cliente redis
-const redis = new Redis();
-redis.subscribe('messages', 'alerts', 'admin', function (err, count) {
-  // Now we are subscribed to both the 'news' and 'music' channels.
-  // `count` represents the number of channels we are currently subscribed to.
-});
-
-    //   app.get('/', function(req, res) {
-    //   res.sendFile(__dirname + '/index.html');
-    // });
-
-    redis.on('message', function (channel, message) {
-                  // Receive message Hello world! from channel news
-                  // Receive message Hello again! from channel music
-                  console.log('Receive message %s from channel %s', message, channel);
-                  
-        });
+// //Si el servidor redis arranca sin problemas entonces
+// redisserver.open((err) => {
+//   if (err === null) { 
+//   //Si el servidor redis da error mostramos el error
+//   } else {console.log(err);}
+//   });
+ 
 
 
-    //Whenever someone connects this gets executed
+    //Cuando alguien se conecta
     io.on('connection', function(socket) {
-       console.log('A user connected in socket: '+socket);
-      var sessionid = socket.id;
+       console.log('A user connected in socket: '+socket.id);
+      const sessionid = socket.id;
+      var userID;
+     
 
-         socket.on('clientConnected', function(id) {
-            console.log("User: "+id+" SocketID: "+sessionid);
-            redis.set(id, sessionid);
-            var userID = id;
+      //Creamos el cliente redis en modo suscripción(para ese socket) y lo suscribimos a los canales correspondientes
+      const subredis = new Redis();
+      subredis.subscribe('messages', 'alerts', 'admin', function (err, count) {
+      });
+
+      //Creamos otro cliente para trabajar en modo normal
+      const redis = new Redis();
+      
+
+        //El usuario conectado se identifica a través del token para evitar suplantaciones
+         socket.on('clientConnected', function(token) {
+            console.log("User: "+token+" SocketID: "+sessionid);
+            //Primero hay que comprobar que no tenemos otro socket con la misma id. Si existe debe ser eliminado.
+            if (redis.exists(token)){ redis.del(token) }
+            redis.set(token, sessionid);
+
+            //Aqui podemo añadir un tiempo de expiración si queremos para el regístro. PE. 1 minuto
+            //De este modo cada minuto el cliente debe de enviar las credenciales para que le lleguen los mensajes
+            //redis.expire(token, 60)
 
              });
 
-         redis.on('message', function (channel, message) {
+         //Al recibir un  mensaje por alguno de los canales devuelve el canal y el mensaje
+         subredis.on('message', function (channel, message) {
                   // Receive message Hello world! from channel news
                   // Receive message Hello again! from channel music
                   console.log('Receive message %s from channel %s', message, channel);
                   
 
+                      //En función del canal al que vaya destinado, hacemos una cosa u otra
+                      switch(channel){
 
-                switch(channel){
+                        case 'messages':  
+                        //Si es para el canal messages, comprobamos si receptor esta conectado
 
-                  case 'messages':  
+                                          redis.get(message.receptor, function(err, result){
+                                                
+                                                if (err){ 
+                                                          //Si no esta conectado muestra un error por consola
+                                                          console.log("Error :"+err); 
 
+                                                } else { 
 
-                                    redis.get(message.receptor, function(err, result){
-                        
-                                          if (err){ console.log("Error :"+err); }
-                                          else { 
+                                                      //Si su id esta en nuestra BBDD Redis, nos devuelve el socket 
+                                                      var destinyID = result;
+                                                      console.log("Message to socket: "+result);
+                                                      socket.broadcast.to(destinyID).emit('privateMessage', message);
+                                                }    
 
-                                                var destinyID = result;
-                                                console.log("Message to socket: "+result);
-                                                socket.broadcast.to(destinyID).emit('privateMessage', message);
-                                          }    
-
-                                    });
-
-
-
-                  break;
-
-                  case 'alerts':
-
-                                  socket.broadcast.emit('alertMessage', message);
+                                          });
 
 
-                  break;
 
-                  // case 'admin':
+                        break;
 
-                  //                 socket.broadcast.emit('adminMessage', message);
+                        case 'alerts':
+
+                                        socket.broadcast.emit('alertMessage', message);
 
 
-                  // break;
+                        break;
 
-                };
+                        // case 'admin':
 
+                        //                 socket.broadcast.emit('adminMessage', message);
+
+
+                        // break;
+
+                    }
 
         });
 
          //Whenever someone disconnects this piece of code executed
          socket.on('disconnect', function () {
-            redis.del();
             console.log('A user disconnected');
+            subredis.del();
+            redis.del();
 
-            //Hacer un ping a todos los usuarios de la lista de sockets o bien comparar todos los sockets conectados con los que tenemos en la lista
 
          });
 
