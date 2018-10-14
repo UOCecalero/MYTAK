@@ -41,12 +41,13 @@ class UsersController extends Controller
     }
 
 
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function exists($token)
+    public function exists($token, $devicetoken)
     {   
         //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
@@ -55,8 +56,6 @@ class UsersController extends Controller
               'default_access_token' => $token,
               'default_graph_version' => 'v2.10',
               ]);
-
-        
 
 
         //Con lo que devuelve Faecbook podemos hacer una llamada para extraer datos
@@ -113,6 +112,7 @@ class UsersController extends Controller
             $user->gender = $data['gender'];
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
+            $user->devicetoken = $devicetoken;
             $user->photo = $data['picture']['data']['url'];
             //$user->birthdate = $data['birthdate'];
             // $user->job = $data['job'];
@@ -151,11 +151,16 @@ class UsersController extends Controller
 
          }
 
+         //En este else se entra si hay exactamente un usuario con ese email
           else { $user = $collection[0]; }
 
         
         if( isset( $user->tokens[0]) ){ $user->tokens[0]->delete(); };
         $accesstoken = $user->createToken('accessToken')->accessToken;
+        $user->devicetoken = $devicetoken;
+        $user->save();
+
+
         return $accesstoken;
         
 

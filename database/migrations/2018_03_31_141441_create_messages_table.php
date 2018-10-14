@@ -16,11 +16,12 @@ class CreateMessagesTable extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
-            $table->unsignedBigInteger('conversation'); //Hace referencia a un match 
-            $table->boolean('checked')->default(0);
+            //$table->unsignedBigInteger('conversation'); //Hace referencia a un match 
             $table->unsignedBigInteger('emisor');
             $table->unsignedBigInteger('receptor');
+            $table->text('receptor_token');
             $table->text('texto');
+            $table->boolean('checked')->default(0);
             $table->boolean('caducado')->default(0);
         });
     }
