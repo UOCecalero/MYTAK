@@ -19,7 +19,7 @@ use App\Http\Controllers\Auth\RegisterController;
 
 Route::get('/test', 'UsersController@index' );
 
-Route::get('/token/{token}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestro
+Route::get('/token/{token}/{devicetoken}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestro
 
 Route::middleware('auth:api')->get('/me', 'UsersController@me');
 

@@ -61,6 +61,20 @@ class MessageController extends Controller
 
         return $filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values();
 
+        //Formato de los mensajes
+
+        // "id": 1,
+        // "created_at": "2018-05-01 13:43:58",
+        // "updated_at": "2018-05-01 13:43:58",
+        // "conversation": 0, --> este campo ha sido eliminado
+        // "checked": 0,
+        // "emisor": 86,
+        // "receptor": 90,
+        // "receptor_token": "jkdsnlfkjlksjnf8747358b88f8ni894b9fub98brid",
+        // "texto": "Hola! Que tal? ;P",
+        // "caducado": 0,
+        // "whois": "emisor",
+        // "time": "13:43:58"
 
     }
 
@@ -83,16 +97,16 @@ class MessageController extends Controller
         if ( $me->matches()->where('id', $user->id ) ){
 
 
-            Redis::publish('messages', json_encode([
-                'emisor' => $me->id, 
-                //'receptor' => $user->id,
-                /**
-                    Lo manda al token. Cuando el usuario se conecta se identifica con el token para recibir los mensajes. Por lo tanto la unica forma de suplantar al usuario es tener el token. En caso de que alguien lo consiguiese, caduca.
-                **/
-                'receptor' => $user->tokens[0],
-                'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 
-                'text' => $data['texto']
-            ]) );
+            // Redis::publish('messages', json_encode([
+            //     'emisor' => $me->id, 
+            //     //'receptor' => $user->id,
+            //     /**
+            //         Lo manda al token. Cuando el usuario se conecta se identifica con el token para recibir los mensajes. Por lo tanto la unica forma de suplantar al usuario es tener el token. En caso de que alguien lo consiguiese, caduca.
+            //     **/
+            //     'receptor' => $user->tokens[0],
+            //     'time' => Carbon::now('Europe/Madrid')->toDateTimeString(), 
+            //     'text' => $data['texto']
+            // ]) );
 
 
 
@@ -100,11 +114,15 @@ class MessageController extends Controller
 
             $message->emisor = $me->id;
             $message->receptor = $user->id;
+            $message->receptor_token = $user->tokens[0];
             $message->texto = $data['texto'];
 
             $message->save();
 
-            return $message->texto;
+
+            Redis::publish('messages', json_encode([ $message ]) );
+
+            return $message;
 
         }
 
