@@ -112,7 +112,7 @@ class UsersController extends Controller
             $user->gender = $data['gender'];
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
-            $user->devicetoken = $devicetoken;
+            if ($devicetoken) { $user->devicetoken = $devicetoken; }
             $user->photo = $data['picture']['data']['url'];
             //$user->birthdate = $data['birthdate'];
             // $user->job = $data['job'];
@@ -157,7 +157,7 @@ class UsersController extends Controller
         
         if( isset( $user->tokens[0]) ){ $user->tokens[0]->delete(); };
         $accesstoken = $user->createToken('accessToken')->accessToken;
-        $user->devicetoken = $devicetoken;
+        if ($devicetoken) { $user->devicetoken = $devicetoken; }
         $user->save();
 
 
