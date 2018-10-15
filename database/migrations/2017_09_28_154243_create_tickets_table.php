@@ -17,7 +17,7 @@ class CreateTicketsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->unsignedBigInteger('random');
-            //$table->unsignedBigInteger('evento_id');
+            $table->unsignedBigInteger('evento_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedTinyInteger('price_id');
             //$table->string('card_token'); // Si se decide guardar los tokens de la tarjeta hay que modificar PurchasesController@store
