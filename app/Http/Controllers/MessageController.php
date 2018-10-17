@@ -121,7 +121,7 @@ class MessageController extends Controller
 
             } else {
 
-                $message->receptor_token = null
+                $message->receptor_token = null;
             }
             
 
