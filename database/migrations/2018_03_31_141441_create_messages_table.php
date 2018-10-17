@@ -19,9 +19,9 @@ class CreateMessagesTable extends Migration
             //$table->unsignedBigInteger('conversation'); //Hace referencia a un match 
             $table->unsignedBigInteger('emisor');
             $table->unsignedBigInteger('receptor');
-            $table->text('receptor_token');
+            $table->text('receptor_token')->nullable();
             $table->text('texto');
-            $table->boolean('checked')->default(0);
+            $table->boolean('checked')->default(false);
             $table->boolean('caducado')->default(0);
         });
     }
