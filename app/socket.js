@@ -70,7 +70,14 @@ var Redis = require("ioredis");
                                                       //Si su id esta en nuestra BBDD Redis, nos devuelve el socket 
                                                       var destinyID = result;
                                                       console.log("Message to socket: "+result);
-                                                      socket.broadcast.to(destinyID).emit('privateMessage', message);
+                                                      socket.broadcast.to(destinyID).emit('privateMessage', function(message){
+
+                                                          //Aqui ya se puede actualizar message con el checked == true
+                                                          //Despues actualizar la base de datos
+                                                          //Despues indicar al emisor que ha sido recibido para que cambie el tick
+
+
+                                                      });
                                                 }    
 
                                           });
