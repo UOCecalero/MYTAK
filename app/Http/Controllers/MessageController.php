@@ -114,7 +114,17 @@ class MessageController extends Controller
 
             $message->emisor = $me->id;
             $message->receptor = $user->id;
-            $message->receptor_token = $user->tokens[0];
+
+            if ( $isset($user->tokens[0] )) { 
+
+                $message->receptor_token = $user->tokens[0];
+
+            } else {
+
+                $message->receptor_token = null
+            }
+            
+
             $message->texto = $data['texto'];
 
             $message->save();
