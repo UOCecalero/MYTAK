@@ -18,9 +18,10 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('FBid');
             $table->string('name');
             $table->string('surnames');
-            $table->string('gender',6)->default('both');
+            $table->string('gender',6)->nullable();
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('lema')->nullable();
             $table->rememberToken();
             $table->string('devicetoken')->nullable();
             $table->timestampsTz();
