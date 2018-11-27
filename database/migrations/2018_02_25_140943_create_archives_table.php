@@ -19,7 +19,7 @@ class CreateArchivesTable extends Migration
             $table->timestamps();
             $table->string('path');
             $table->tinyinteger('position')->default(1);
-            $table->tinyinteger('type')->default(1);
+            $table->tinyinteger('type')->default(1); //No entiendo porque hay varios type
         });
     }
 

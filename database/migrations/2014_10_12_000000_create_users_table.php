@@ -18,14 +18,15 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('FBid');
             $table->string('name');
             $table->string('surnames');
-            $table->string('gender',6);
+            $table->string('gender',6)->nullable();
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('lema')->nullable();
             $table->rememberToken();
             $table->string('devicetoken')->nullable();
             $table->timestampsTz();
             $table->timestampTz('last_connection');
-            $table->binary('photo');
+            $table->string('photo');
             $table->date('birthdate');
             $table->string('job', 50)->nullable();
             $table->string('studies', 50)->nullable();
@@ -38,7 +39,7 @@ class CreateUsersTable extends Migration
             $table->string('customer')->unique()->nullable();
             $table->float('lat',10,6)->nullable();
             $table->float('lng',10,6)->nullable();
-            $table->string('genderpreference',6); //options: male, female o both
+            $table->string('genderpreference',6)->default("both"); //options: male, female o both
             $table->unsignedtinyInteger('inagepreference')->default(18);
             $table->unsignedtinyInteger('outagepreference')->default(99);
             $table->unsignedTinyInteger('eventdistance')->default(25);

@@ -33,6 +33,7 @@ class ArchiveController extends Controller
         $avatars = $user->archives()->where('type',1)->get();
         $num_avatars = count( $avatars );
 
+        //Restringe el máximo de avatatares por usuario a MAX_AVATARS
         if ( $num_avatars  < env('MAX_AVATARS') ){
 
             $path = request()->file('avatar')->store('avatars');
