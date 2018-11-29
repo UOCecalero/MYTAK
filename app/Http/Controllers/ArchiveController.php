@@ -38,10 +38,10 @@ class ArchiveController extends Controller
 
             $path = request()->file('avatar')->store('avatars');
 
-            foreach ($avatars as $item) {
+            foreach ($avatars as $avatar) {
 
-                $item->position ++;
-                $item->save();
+                $avatar->position ++;
+                $avatar->save();
             }
 
             $archive = new Archive;
@@ -61,4 +61,128 @@ class ArchiveController extends Controller
             return 0; 
         }
     }
+
+     /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Archive $archive)
+    {
+        $user=Auth::user();
+        $avatars = $user->archives()->where('type',1)->get();
+
+        foreach ($avatars as $avatar) {
+
+                if ($avatar == $archive){
+
+                    $avatar->delete();
+                    return 1;
+
+                }
+            }
+
+        return 0;
+        
+
+        
+    }
+
+    /**
+     * Se intarcambian las posiciones
+     *
+     * @param  int  $position
+     * @return int
+     */
+    public function changePosition(Archive $archive, $position)
+    {
+        $user=Auth::user();
+        $avatars = $user->archives()->where('type',1)->get();
+        $num_avatars = count( $avatars );
+
+        if ($archive->position == $position) { return 0; }
+
+        //Se intercambian las posiciones
+        foreach ($avatars as $avatar) {
+
+                    if ($avatar->position == $position) { 
+
+                        $avatar->position = $archive->position;
+                        $avatar->save();
+
+
+                           }
+
+                    if ($avatar->postion == $archive->position) { 
+
+                        $avatar->position = $position;
+                        $avatar->save(); 
+                    }
+
+                
+            }
+
+
+        return 1;
+    }
+
+    /**
+     * Se rerodenan de forma que se pueda hacer gráficamente 
+     *
+     * @param  int  $id
+     * @return int
+     */
+    public function reorder(Archive $archive, $position)
+    {
+        $user=Auth::user();
+        $avatars = $user->archives()->where('type',1)->get();
+        $num_avatars = count( $avatars );
+
+        //Si la posicion a la que se quiere mover es la misma, no hace nada
+        if ($archive->position == $position) { return 0; }
+
+        //Si la posicion a la que se quiere mover es mayor que las fotos existentes o menor que 0, no hace nada.
+        if ( $position > $num_avatars || $position < 0) { return 0; }
+
+        //Si la posicion a la que se quiere mover es  mayor que la posición actual (mueve a derecha)
+        if ($position > $archive->position){
+
+            foreach ($avatar as $avatar) {
+                
+                if( $avatar->position > $archive->position && $avatar->position <= $position) {
+
+                    $avatar->position++;
+                    $avatar->save();
+                }
+            }
+
+            $archive->position = $position;
+            $archive->save();
+
+            return 1;
+
+
+        }
+
+        //Si la posicion a la que se quiere mover es  mayor que la posición actual (mueve a izquierda)
+        if ($position < $archive->position)
+
+            foreach ($avatar as $avatar) {
+                
+                if( $avatar->position >= $position && $avatar->position < $archive->position) {
+
+                    $avatar->position--;
+                    $avatar->save();
+                }
+            }
+
+            $archive->position = $position;
+            $archive->save();
+
+
+        return 1;
+    }
+
+
 }
