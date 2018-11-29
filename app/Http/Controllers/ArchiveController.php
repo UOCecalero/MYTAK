@@ -54,7 +54,7 @@ class ArchiveController extends Controller
             $user->photo = $path;
             $user->save();
 
-            return 1;
+            return $archive;
 
         } else { 
             
