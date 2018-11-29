@@ -26,7 +26,7 @@ class CreateUsersTable extends Migration
             $table->string('devicetoken')->nullable();
             $table->timestampsTz();
             $table->timestampTz('last_connection');
-            $table->string('photo');
+            $table->string('photo')->nullable();
             $table->date('birthdate');
             $table->string('job', 50)->nullable();
             $table->string('studies', 50)->nullable();

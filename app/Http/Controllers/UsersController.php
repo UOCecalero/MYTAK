@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Evento;
 use App\Match;
 use App\Empresa;
 use App\Bloqueado;
 use App\User;
 use App\Ticket;
+use App\Archive;
 use Carbon\Carbon;
 //use Stripe\{Stripe, Charge, Customer}
 
@@ -113,7 +115,24 @@ class UsersController extends Controller
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
             if ($devicetoken) { $user->devicetoken = $devicetoken; }
-            $user->photo = $data['picture']['data']['url'];
+            
+            if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
+
+                if ( $contents = file_get_contents($facebookPhotoUrl) ){
+
+                        $path = Storage::disk('local')->put('avatars');
+                        $archive = new Archive;
+                        $archive->user_id = $user->id;
+                        $archive->path = $path;
+                        $archive->position = 1;
+                        $archive->type = 1;
+                        $archive->save();
+
+                        $user->photo = $path;
+
+                    }
+            }
+            
             //$user->birthdate = $data['birthdate'];
             // $user->job = $data['job'];
             // $user->studies = $data['studies'];
