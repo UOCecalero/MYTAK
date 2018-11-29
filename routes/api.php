@@ -125,9 +125,9 @@ Route::middleware('auth:api')->get('/me/message/{receptor}','MessageController@g
 
 /********************************* FileTransfer interface *******************************************/
 
-Route::middleware('auth:api')->post('/avatar','ArchiveController@store');
+Route::middleware('auth:api')->post('/me/avatar','ArchiveController@store');
 
-Route::middleware('auth:api')->delete('/avatar/{avatar}','ArchiveController@destroy');
+Route::middleware('auth:api')->delete('/me/avatar/{avatar}','ArchiveController@destroy');
 
-Route::middleware('auth:api')->get('/avatar/{avatar}/{position}','ArchiveController@reorder');
+Route::middleware('auth:api')->get('/me/avatar/{avatar}/{position}','ArchiveController@reorder');
 
