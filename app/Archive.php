@@ -13,7 +13,7 @@ class Archive extends Model
      */
     protected $hidden = [
 
-     'id','created_at', 'udpdated_at', 'user_id'
+     'created_at', 'udpdated_at', 'user_id'
     
     ];
 

@@ -39,7 +39,10 @@ class UsersController extends Controller
      */
     public function me()
     {   
-        return Auth::user();     
+        $user = Auth::user();
+        $user->last_connection = Carbon::now('Europe/Madrid');
+        $user->save();
+        return $user;   
     }
 
 

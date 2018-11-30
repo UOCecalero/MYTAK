@@ -37,8 +37,8 @@ class CreateUsersTable extends Migration
             $table->timestampTz('destacado_ini')->nullable();
             $table->timestampTz('destacado_fin')->nullable();
             $table->string('customer')->unique()->nullable();
-            $table->float('lat',10,6)->nullable();
-            $table->float('lng',10,6)->nullable();
+            $table->float('lat',10,6)->default(41.380898); //Es la posición del camp nou ;)
+            $table->float('lng',10,6)->default(2.122820);
             $table->string('genderpreference',6)->default("both"); //options: male, female o both
             $table->unsignedtinyInteger('inagepreference')->default(18);
             $table->unsignedtinyInteger('outagepreference')->default(99);
