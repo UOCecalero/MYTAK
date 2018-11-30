@@ -36,7 +36,12 @@ class ArchiveController extends Controller
         //Restringe el máximo de avatatares por usuario a MAX_AVATARS
         if ( $num_avatars  < env('MAX_AVATARS') ){
 
-            $path = request()->file('avatar')->store('avatars');
+            //$path devuelve el uri interno donde se almacena el recurso
+            //Al usar php artisan storage:link se genera un enlace simbolico a la carpeta public accesible desde el exterior
+            $path = request()->file('avatar')->store('public/avatars');
+
+            //basename extrae el nombre (UUID) de la direecion que devuelve la URI anterior
+            $path = env('URL')."storage/avatars/".basename($path);
 
             foreach ($avatars as $avatar) {
 
