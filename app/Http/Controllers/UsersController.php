@@ -268,8 +268,8 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {    
-        $user = Auth::user();
-
+        $user = auth()->user();
+        
         //Esta funcion se usa para crear y para modificar un usuairo 
         $data= $request->json()->all();
 
