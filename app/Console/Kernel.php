@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+
+        $this->load(__DIR__.'/Commands');
+
     ];
 
     /**
