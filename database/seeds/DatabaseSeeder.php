@@ -13,7 +13,10 @@ class DatabaseSeeder extends Seeder
     {
         //$this->call(UsersTableSeeder::class);
     	//Creamos los usuarios
-    	factory(App\User::class, 100)->create()
+    	factory(App\User::class, 100)->create([
+            'gender' =>  $gender = $this->getGender() , //male, female, both
+            'genderpreference' =>  $genderpreference = $this->getGenderPreference($gender), //male, female, both
+        ])
     		->each(function($usuario){ 
     			//Cada usuario crea una empresa
     			$usuario->empresa()->save(factory(App\Empresa::class)->make()
@@ -80,8 +83,8 @@ class DatabaseSeeder extends Seeder
     private function getRandomUserId($userId){
     	
     	//Evita que emisor y receptor sean el mismo
-    	$user = $userId
-    	while ( $user == userId ) {
+    	$user = $userId;
+    	while( $user == $userId ) {
     		$user = \App\User::inRandomOrder()->first();
     	}
     	return $user->id;
@@ -103,10 +106,27 @@ class DatabaseSeeder extends Seeder
 
     //Esta funcion devuelve un usuario para el mismo evento (que no sea él mismo)
     private function getUserFromEvento(Evento $evento, User $user){
-    	$user2 = $user
-    	while ( $user2 = $user) {
-    		$user = $evento->users()->->inRandomOrder()->firstOrFail();
+    	$user2 = $user;
+    	while ( $user2 == $user) {
+    		$user = $evento->users()->inRandomOrder()->firstOrFail();
     	}
     	return $user2;
+    }
+
+    //Esta funcion devuelve un usuario para el mismo evento (que no sea él mismo)
+    private function getGender(){
+        
+        $gender =  array_random(['male', 'female']);
+        return $gender;
+    }
+
+    private function getGenderPreference($gender){
+        
+        if ($gender == 'male') { 
+            $genderpreference = 'female'; 
+        } else {  
+            $genderpreference ='male';
+        }
+        return $genderpreference;
     }
 }
