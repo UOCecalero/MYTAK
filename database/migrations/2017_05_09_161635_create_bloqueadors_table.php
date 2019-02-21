@@ -18,7 +18,7 @@ class CreateBloqueadorsTable extends Migration
             $table->timestamps();
             $table->UnsignedBigInteger('user_id');
             $table->UnsignedBigInteger('bloqueador_id');
-            $table->string('bloqueador_type');
+            $table->string('bloqueador_type'); //user o empresa
         });
     }
 

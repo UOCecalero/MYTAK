@@ -23,8 +23,8 @@ class CreateTicketsTable extends Migration
             //$table->string('card_token'); // Si se decide guardar los tokens de la tarjeta hay que modificar PurchasesController@store
             $table->binary('qr');
             $table->string('hash');
-            $table->unsignedTinyInteger('used_times');
-            $table->unsignedTinyInteger('used_limit');
+            $table->unsignedTinyInteger('used_times')->default(0);
+            $table->unsignedTinyInteger('used_limit')->default(1);
         });
     }
 
