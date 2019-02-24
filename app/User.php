@@ -3,6 +3,7 @@
 namespace App;
 
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -74,6 +75,11 @@ class User extends Authenticatable
      public function messages()
      {
         return $this->hasMany(Message::class, 'emisor');
+     }
+
+     public function receivedmessages()
+     {
+        return $this->hasMany(Message::class, 'receptor');
      }
 
 

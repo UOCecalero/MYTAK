@@ -19,7 +19,7 @@ class CreateArchivesTable extends Migration
             $table->timestamps();
             $table->string('path');
             $table->tinyinteger('position')->default(1);
-            $table->tinyinteger('type')->default(1); //No entiendo porque hay varios type
+            $table->tinyinteger('type')->default(1); //EL type uno define archivo tipo foto de avatar. Se reserva el resto de type para otro tipo de archivos
         });
     }
 
