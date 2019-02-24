@@ -13,63 +13,104 @@ class DatabaseSeeder extends Seeder
     {
         //$this->call(UsersTableSeeder::class);
     	//Creamos los usuarios
-    	factory(App\User::class, 100)->create([
-            'gender' =>  $gender = $this->getGender() , //male, female, both
-            'genderpreference' =>  $genderpreference = $this->getGenderPreference($gender), //male, female, both
-        ])
-    		->each(function($usuario){ 
+    	factory(App\User::class, 50)->create()
+    		->each(function($usuario){
+                $usuario->gender = $gender = $this->getGender(); //male, female, both
+                $usuario->genderpreference = $genderpreference = $this->getGenderPreference($gender); //male, female, both
+                $usuario->save();
+                print("User created \n");
     			//Cada usuario crea una empresa
-    			$usuario->empresa()->save(factory(App\Empresa::class)->make()
+    			$usuario->empresa()->save(factory(App\Empresa::class)->make())
     				->each(function($empresa){
+                        print("Empresa created: ".$empresa."\n");
     					//Cada empresa crea sus eventos
-    					$empresa->eventos()->saveMany(factory(App\Evento::class, 100)->make()
+    					$empresa->eventos()->saveMany(factory(App\Evento::class, 2)->make())
     						->each(function($evento){ 
-    							//Cada evento crea sus entradas (prices)
-    							$evento->prices()->saveMany( factory(App\Price::class)->make());
-    						}));
-    				}));
+    							print("Evento created: ".$evento." \n");
+                                //Cada evento crea sus entradas (prices)
+    							$evento->prices()->saveMany(factory(App\Price::class, 1)->make())
+                                ->each(function($price){ 
+                                    print("Price created: ".$price." \n");
+                                 });
+
+    						});
+    				});
     		});
 
     	//Creamos los tickets
-    	factory(App\Tickets::class, 200)->create([
-    		'random' => $random = random_int(1,65535),
-	        'user_id' => $user = $this->getRandomUserId(),
-	        'price_id' => $price = $this->getRandomPrice(),
-	        'evento_id' => $evento = $price->evento()->id,
-	        //'hash' => Se tiene que calcular a posteriori mediante una función,
-    	])
+    	factory(App\Ticket::class, 1000)->create()
     		//Calculamos el hash de cada ticket
     		->each(function($ticket){
-
-    			$concat = $random.$ticket->id.$type->id.$ticket->created_at.$evento->id.$user->id;
-    			$ticket->hash = hash("md5", $concat);
-    			$ticket->save();
+            $ticket->user_id = $this->getRandomUserId(1);
+            $ticket->price_id = App\Price::inRandomOrder()->first()->id;
+            $ticket->evento_id = App\Price::findOrFail($ticket->price_id)->evento->id;
+            $ticket->random = random_int(1,65535);
+    		$concat = $ticket->random.$ticket->id.$ticket->price_id.$ticket->created_at.$ticket->evento_id.$ticket->user_id;
+    		$ticket->hash = hash("md5", $concat);
+    		$ticket->save();
+            print("Ticket created: ".$ticket." \n");
     		});
 
 
     	//Creamos los mensajes
-    	factory(App\Message::class, 10000)->create([
+    	factory(App\Message::class, 5000)->create()
+        ->each(function($message){
+            $message->emisor = $this->getRandomUserId(1);
+            $message->receptor = $this->getRandomUserId($message->emisor);
+            $message->save();
+            print("Message created: ".$message." \n");
+        });
 
-    	 'emisor' => $emisor = $this->getRandomUserId(null),
-         'receptor' => $this->getRandomUserId($emisor),
-    	]);
+        //Creamos los matches
+        
+        App\Evento::all()
+        ->each(function($evento){
+            //Comprobamos si el evento tiene algun ticket
+            if ($evento->tickets->count() > 1){
+                //Gurdamos los usuarios de cada ticket
+                $usersCollection = collect([ ]);
+                $evento->tickets->each(function($ticket) use ($usersCollection){
+                    $usersCollection->push($ticket->user);
+                });
+                //Eliminamos los repetidos
+                $usersCollection = $usersCollection->unique();
+                //Numero maximo de matches por evento
+                $maxMatchPerEvent = 3;
+                //Numero de match que queremos crear, si es posible con los tickets existentes.
+                $matchNumber = 20;
+                while ($usersCollection->count() > 1 && $maxMatchPerEvent > 0 && $matchNumber > 0){
 
-    	//Creamos los matches
-    	factory(App\Match::class, 200)->create([
+                    //Cogemos los dos últimos y los sacamos de la coleccion
+                    $user1_id = $usersCollection->pop()->id;
+                    $user2_id = $usersCollection->pop()->id;
+                    
+                    //Creamos el Match
+                    factory(App\Match::class)->create([
+                        'usuario1_id' => $user1_id,
+                        'usuario2_id' => $user2_id,
+                        'evento_id' => $evento,
+                    ])
+                    ->each(function($match){
+                        print("Match created: ".$match." \n");    
+                    });
 
-    	'usuario1_id' => $userId = $this->getRandomUserId(),
-        'evento_id' => $eventoId =$this->getRandomEventoId($userId),
-        'usuario2_id' => $this->getUserFromEvento($eventoId, $userId),
+                    //Decreamentamos los contadores
+                    $maxMatchPerEvent --;
+                    $matchNumber --;
+                }
+            }
+        });
+    	// //Creamos los matches
+    	// factory(App\Match::class, 20)->create()
+     //    ->each(function($match){
+     //        $match->evento_id = $this->getRandomEventoId();
+     //        // $match->usuario1_id = $this->getUserWithTickets();
+     //        $match->usuario1_id = $this->getUserFromEvento($match->evento_id, -1);
+     //        $match->usuario2_id = $this->getUserFromEvento($match->evento_id, $match->usuario1_id);
+     //        $match->save();
+     //        print("Match created: ".$match." \n");
+     //    });
 
-    	]);
-
-    	factory(App\Match::class, 200)->create([
-
-    	'usuario1_id' => $userId = $this->getRandomUserId(),
-        'evento_id' => $eventoId =$this->getRandomEventoId($userId),
-        'usuario2_id' => $this->getUserFromEvento($eventoId, $userId),
-
-    	]);
 
     	// factory(App\Bloqueadors::class, 200)->create([
 
@@ -77,6 +118,7 @@ class DatabaseSeeder extends Seeder
      //    'bloqueador_id' => $this->getRandomUserId($emisor) ,
 
     	// ]);
+       
 
     }
 
@@ -85,32 +127,36 @@ class DatabaseSeeder extends Seeder
     	//Evita que emisor y receptor sean el mismo
     	$user = $userId;
     	while( $user == $userId ) {
-    		$user = \App\User::inRandomOrder()->first();
+    		$user = App\User::inRandomOrder()->first()->id;
     	}
-    	return $user->id;
+    	return $user;
     }
 
-    private function getRandomEventoId($userId){
-    	
-    	$user = \App\User::findOrFail($userId);
-    	$eventos = $user->tickets()->evento()->get();
-    	$evento = $eventos::inRandomOrder()->firstOrFail();
-    	return $evento->id;
+
+    //Devuelve un usuario que tiene algun ticket
+    private function getUserWithTickets(){
+        $user = App\Ticket::inRandomOrder()->first()->user;
+        return $user->id;
+
     }
 
-    private function getRandomPrice(){
-
-    	$price = \App\Price::inRandomOrder()->firstOrFail();
-    	return $price;
+    private function getRandomEventoId(){
+        
+        $ticket = App\Ticket::inRandomOrder()->first();
+        // $ticket = $user->tickets->random();
+        $evento = $ticket->evento;
+        return $evento->id;
     }
 
     //Esta funcion devuelve un usuario para el mismo evento (que no sea él mismo)
-    private function getUserFromEvento(Evento $evento, User $user){
-    	$user2 = $user;
-    	while ( $user2 == $user) {
-    		$user = $evento->users()->inRandomOrder()->firstOrFail();
+    private function getUserFromEvento($eventoId, $userId){
+
+    	$user2Id = $userId;
+        $evento = App\Evento::findOrFail($eventoId);
+    	while ( $user2Id == $userId) {
+    		$userId = $evento->tickets->random()->user->id;
     	}
-    	return $user2;
+    	return $userId;
     }
 
     //Esta funcion devuelve un usuario para el mismo evento (que no sea él mismo)
@@ -129,4 +175,5 @@ class DatabaseSeeder extends Seeder
         }
         return $genderpreference;
     }
+    
 }
