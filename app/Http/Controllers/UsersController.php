@@ -56,8 +56,10 @@ class UsersController extends Controller
     {   
         //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
-              'app_id' => '643164375870720',
-              'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
+              // 'app_id' => '643164375870720',
+              'app_id' => '261908097712873',
+              // 'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
+              'app_secret' => 'a1e367d1eb0c484890be9a1f0391c4e3',
               'default_access_token' => $token,
               'default_graph_version' => 'v2.10',
               ]);
