@@ -125,7 +125,7 @@ class UsersController extends Controller
 
                 if ( $contents = file_get_contents($facebookPhotoUrl) ){
 
-                        $path = Storage::disk('local')->put('avatars');
+                        $path = Storage::disk('local')->put( $contents, 'avatars');
                         $archive = new Archive;
                         $archive->user_id = $user->id;
                         $archive->path = $path;
