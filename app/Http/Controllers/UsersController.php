@@ -61,13 +61,13 @@ class UsersController extends Controller
               // 'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
               'app_secret' => 'e783ded20404501e301c13b7c2afc71f',
               'default_access_token' => $token,
-              'default_graph_version' => 'v2.10',
+              'default_graph_version' => 'v3.0',
               ]);
 
 
         //Con lo que devuelve Faecbook podemos hacer una llamada para extraer datos
         try {
-          $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email '/*,birthday **/);
+          $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email ,birthday' );
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
           // When Graph returns an error
           echo 'Graph returned an error: ' . $e->getMessage();
@@ -120,25 +120,7 @@ class UsersController extends Controller
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
             if ($devicetoken) { $user->devicetoken = $devicetoken; }
-            
-            if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
-
-                if ( $contents = file_get_contents($facebookPhotoUrl) ){
-
-                        $path = Storage::disk('local')->put( $contents, 'avatars');
-                        $archive = new Archive;
-                        $archive->user_id = $user->id;
-                        $archive->path = $path;
-                        $archive->position = 1;
-                        $archive->type = 1;
-                        $archive->save();
-
-                        $user->photo = $path;
-
-                    }
-            }
-            
-            //$user->birthdate = $data['birthdate'];
+            $user->birthdate = Carbon::createFromFormat('m/d/Y',$data['birthday']);
             // $user->job = $data['job'];
             // $user->studies = $data['studies'];
             // $user->aceptar = $data['aceptar'];
@@ -148,15 +130,8 @@ class UsersController extends Controller
             // $user->destacado_fin = $data['destacado_fin'];
             // $user->lat = $data['lat'];
             // $user->lng = $data['lng'];
-            if ( $data['gender']== 'male') {
-
-
-              $user->genderpreference = 'female';
-
-            }  else {
-
-                $user->genderpreference = 'male';
-            }
+            if ( $data['gender']== 'male') {  $user->genderpreference = 'female'; }  
+            else { $user->genderpreference = 'male'; }
 
             /******************************** Calculamos el avg **********************/
             $collection = User::all(); 
@@ -183,6 +158,28 @@ class UsersController extends Controller
         $accesstoken = $user->createToken('accessToken')->accessToken;
         if ($devicetoken) { $user->devicetoken = $devicetoken; }
         $user->save();
+
+        //Se tiene que hacer aquí sino user_id aún no existe
+        if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
+
+                if ( $contents = file_get_contents($facebookPhotoUrl) ){
+
+                        //De la url que devuelve, coge como nombre la cadena que hay despues del igual y le añade .jpg al final
+                        $name = substr($facebookPhotoUrl, strrpos($facebookPhotoUrl, '=', -1) + 1).".jpg";
+                        Storage::disk('local')->put($name, $contents);
+                        $path = asset('storage/'.$name);
+                        $archive = new Archive;
+                        $archive->user_id = $user->id;
+                        $archive->path = $path;
+                        $archive->position = 1;
+                        $archive->type = 1;
+                        $archive->save();
+
+                        $user->photo = $path;
+                        $user->save();
+
+                    }
+            }
 
 
         return $accesstoken;
@@ -488,10 +485,11 @@ class UsersController extends Controller
                 return $element->points;
             });
 
+            if( empty($sorted->values()->get($position - 1)) ) { abort(404,'No hay mas eventos'); }
+
             return $sorted->values()->get($position - 1); //La resta es para que empiece a indexar en 1
 
                 
-
     }
 
     // /**

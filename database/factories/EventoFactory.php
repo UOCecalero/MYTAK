@@ -19,7 +19,7 @@ $factory->define(App\Evento::class, function (Faker $faker) {
         // 'destacado_ini' => $faker->optional($weight = 0.2)->dateTimeBetween($startDate = '-1 month', $endDate = $event_ini, $timezone = 'Europe/Madrid'),
         // 'destacado_fin' => $faker->optional($weight = 0.1)->$event_ini,
         'location_name' => $faker->city,
-        'lat' => $faker->latitude($min = -90, $max = 90),
-        'lng' => $faker->longitude($min = -180, $max = 180),
+        'lat' => $faker->latitude($min = 41.266308, $max = 41.613609),
+        'lng' => $faker->longitude($min = 1.719594, $max = 2.246707),
     ];
 });
