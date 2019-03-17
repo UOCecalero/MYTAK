@@ -341,7 +341,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy()
+    public function destroy(User $user)
     {
         $user=Auth::user();
         $user->delete();
@@ -368,8 +368,8 @@ class UsersController extends Controller
                   ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr', 'tickets.hash')
                   ->get();
 
-        if ($eventos->isEmpty()){ return null; }
-        else{ return $eventos; }
+        if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
+        return $eventos;
 
     }
 
@@ -485,10 +485,16 @@ class UsersController extends Controller
                 return $element->points;
             });
 
+            /******* Esta es la version antigua donde se devuelve elemento por elemento *************
+            //Devuelve un error 404 si no hay mas eventos
             if( empty($sorted->values()->get($position - 1)) ) { abort(404,'No hay mas eventos'); }
 
             return $sorted->values()->get($position - 1); //La resta es para que empiece a indexar en 1
+            *******************************************************************************************/
 
+            /************ Esta es la version nueva donde se devuelve por bloques de X elementos *********/
+            $array = $sorted->values()->chunk(10);
+            return $array[$position -1];
                 
     }
 
@@ -559,7 +565,7 @@ class UsersController extends Controller
 
             $user = User::find($user);
             $user->customer_id = $customerid;
-            return 1;        
+            return $user;        
 
     }
 
@@ -576,8 +582,8 @@ class UsersController extends Controller
         
         $matches = $user->matches();
 
-        if ($matches->isEmpty()){ return null; }
-        else{ return $matches; }
+        if ($matches->isEmpty()){ abort(404,'No hay matches'); }
+        return $matches;
     }
 
     /**
@@ -634,11 +640,6 @@ class UsersController extends Controller
                 if( $hayMatch->isEmpty() ){ return 1; } else { return 2; } 
 
                 }
-
-          
-
-
-
             
         }
     }
@@ -655,27 +656,16 @@ class UsersController extends Controller
 
         $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get(); 
 
-        if ($res->isEmpty())
-        {
-        
-        return 0;
-
-        } 
-        
-        else
-        
-        {   
+        if ($res->isEmpty()) { abort(404, "Usuario not found"); }  
 
             foreach ($res as $m) {
                 $id = $m->id;
                 Match::destroy($id);
 
             }
+
              //El numero de matches borrados (uno por evento)
              return count($res);
-        }
-        
-
     }
 
 
@@ -688,17 +678,8 @@ class UsersController extends Controller
     public function delmatchonevento(Evento $evento)
     {
         $res = Match::where('evento_id', $evento->id)->get(); 
-
-        if ($res->isEmpty())
-        {
+        if ($res->isEmpty()) { abort(404, "Macth not found");} 
         
-        return 0;
-
-        } 
-        
-        else
-        
-        {
             foreach ($res as $m) {
                 
                 $id = $m->id;
@@ -707,8 +688,6 @@ class UsersController extends Controller
              
             
              return count($res);
-        }
-        
 
     }
 
@@ -723,11 +702,9 @@ class UsersController extends Controller
         $user = Auth::user();
         $bloqueados = $user->bloqueados;
 
-        if($bloqueados->isNotEmpty())
-        {
+        if($bloqueados->isEmpty()){ abort(404,'No hay bloqueados'); }
         return $bloqueados;
-        }
-        else return null;
+    
     }
 
     /**
@@ -741,11 +718,9 @@ class UsersController extends Controller
         $user = Auth::user();
         $bloqueadores = $user->users;
 
-        if($bloqueadores->isNotEmpty())
-        {
+        if($bloqueadores->isEmpty()){ abort(404, 'No hay bloqueadores');}
         return $bloqueadores;
-        }
-        else return null;
+        
     }
 
     /**
@@ -757,10 +732,9 @@ class UsersController extends Controller
     public function addbloqueado(User $bloqueado)
     {    
         $user = Auth::user();
+        abort_unless($user->bloqueados()->attach($bloqueado->id),404);
 
-        $user->bloqueados()->attach($bloqueado->id);
-
-        return 1;
+        return $bloqueado;
 
     }
 
@@ -773,24 +747,24 @@ class UsersController extends Controller
     public function delbloqueado( User $bloqueado)
     {
         $user = Auth::user();
-        $user->bloqueados()->detach($bloqueado->id);
+        abort_unless($user->bloqueados()->detach($bloqueado->id),404);
 
-        return 1;
+        return $bloqueado;
 
     }
 
-    /*** 
+
+    /**
      * Mostrar la empresa(s) de un user
      *
-     * @param  int  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showEmpresa()
+    public function empresa()
     {
-              
-        return Auth::user()->empresa;
-
-    } 
+        abort_unless($user = Auth::user()->empresa()->count(),404);
+        return $user->empresa();
+    }
 
     /**
      * Eliminar una empresa de un user 

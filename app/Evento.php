@@ -13,7 +13,7 @@ class Evento extends Model
      * @var array
      */
     protected $hidden = [
-        'tickets', 'created_at', 'updated_at', 'destacado_ini', 'destacado_fin'
+        'tickets', 'created_at', 'updated_at', 'destacado_ini', 'destacado_fin','distance','distfactor','popfactor','timefactor','points','premium'
     ];
     
 

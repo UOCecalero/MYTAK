@@ -67,7 +67,7 @@ Route::middleware('auth:api')->get('/me/bloqueado/{bloqueado}', 'UsersController
 
 Route::middleware('auth:api')->delete('/me/bloqueado/{bloqueado}', 'UsersController@delbloqueado');
 
-Route::middleware('auth:api')->get('/me/empresa', 'UsersController@showEmpresa'); 
+Route::middleware('auth:api')->get('/me/empresa', 'UsersController@empresa'); 
 
 Route::middleware('auth:api')->post('/me/empresa', 'EmpresasController@store'); //OK
 
