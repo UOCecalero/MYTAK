@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Http\Controllers;
@@ -215,56 +214,86 @@ class PurchasesController extends Controller
         //$evento = Evento::find($type->evento_id);
         $evento = $type->evento;
 
-        $charge = Charge::Create([
+        // try {
 
-            // 'customer' => $user->customer->id,
-            'description' =>$evento->nombre,
-            //'source' => $data['token'],
-            'source' => $card_token,
-            'amount' => $cash_total,
-            'currency' => 'eur',
-            'metadata' => array( "user_id" => $user->id, "user_name" => $user->name." ".$user->surnames, "price_id" => $type->id, "price_name" => $type->name, "price" => $type->precio, "num_tickets" => $num_tickets , "event" => $evento->id, "event_name" => $evento->nombre )
-            
-            ]);
+            $charge = Charge::Create([
 
-        if ($charge){
+                // 'customer' => $user->customer->id,
+                'description' =>$evento->nombre,
+                //'source' => $data['token'],
+                'source' => $card_token,
+                'amount' => $cash_total,
+                'currency' => 'eur',
+                'metadata' => array( "user_id" => $user->id, "user_name" => $user->name." ".$user->surnames, "price_id" => $type->id, "price_name" => $type->name, "price" => $type->precio, "num_tickets" => $num_tickets , "event" => $evento->id, "event_name" => $evento->nombre )
+                
+                ]);
 
-        for ($i = 0; $i < $num_tickets; $i ++){ // Lo que hace es crear un qr por cada ticket pero un solo recargo 
+        // } catch(\Stripe\Error\Card $e) {
+        //       // Since it's a decline, \Stripe\Error\Card will be caught
+        //       $body = $e->getJsonBody();
+        //       $err  = $body['error'];
+
+        //       throw new Exception("Error Processing Request", 1);
+              
+        //       print('Status is:' . $e->getHttpStatus() . "\n");
+        //       print('Type is:' . $err['type'] . "\n");
+        //       print('Code is:' . $err['code'] . "\n");
+        //       // param is '' in this case
+        //       print('Param is:' . $err['param'] . "\n");
+        //       print('Message is:' . $err['message'] . "\n");
+        //     } catch (\Stripe\Error\RateLimit $e) {
+        //       // Too many requests made to the API too quickly
+        //     } catch (\Stripe\Error\InvalidRequest $e) {
+        //       // Invalid parameters were supplied to Stripe's API
+        //     } catch (\Stripe\Error\Authentication $e) {
+        //       // Authentication with Stripe's API failed
+        //       // (maybe you changed API keys recently)
+        //     } catch (\Stripe\Error\ApiConnection $e) {
+        //       // Network communication with Stripe failed
+        //     } catch (\Stripe\Error\Base $e) {
+        //       // Display a very generic error to the user, and maybe send
+        //       // yourself an email
+        //     } catch (Exception $e) {
+        //       // Something else happened, completely unrelated to Stripe
+        //     }
+
+        // if ($charge) {
+
+            for ($i = 0; $i < $num_tickets; $i ++){ // Lo que hace es crear un qr por cada ticket pero un solo recargo 
 
 
-            // Creamos el ticket
-            $ticket = new Ticket();
+                // Creamos el ticket
+                $ticket = new Ticket();
 
-            //creamos un radom para la transacción
-            $random = random_int(1,65535);
+                //creamos un radom para la transacción
+                $random = random_int(1,65535);
 
-            //Generamos el hash
-            $concat = $random.$ticket->id.$type->id.$ticket->created_at.$evento->id.$user->id;
-            $hash = hash("md5", $concat);
-            //este código qr hará una petición a una dirección que nos devolverá una página en verde o rojo en función de si el ticket es válido o no, ademas de su fecha y evento en grande. Podría incluir otros metadatos del comprador, como su nombre, la foto, etc...
+                //Generamos el hash
+                $concat = $random.$ticket->id.$type->id.$ticket->created_at.$evento->id.$user->id;
+                $hash = hash("md5", $concat);
+                //este código qr hará una petición a una dirección que nos devolverá una página en verde o rojo en función de si el ticket es válido o no, ademas de su fecha y evento en grande. Podría incluir otros metadatos del comprador, como su nombre, la foto, etc...
 
-            $qr = QrCode::size(300)->generate( env('URL') ."/".$hash); //env hace referencia al archivo .env . HAY QUE ACTUALIZAR LA URL!!!
+                $qr = QrCode::size(300)->generate( env('URL') ."/".$hash); //env hace referencia al archivo .env . HAY QUE ACTUALIZAR LA URL!!!
 
-            $ticket->random = $random;
-            $ticket->evento_id = $evento->id;
-            $ticket->user_id = $user->id;
-            $ticket->price_id = $type->id;
-            //$ticket->card_token = $card_token; //Si roban los tokens de la tarjeta podrían hacer recargos (aunque son de un solo uso)
-            $ticket->qr = $qr;
-            $ticket->hash = $hash;
-            $ticket->used_times = 0;
-            $ticket->used_limit = 1;
+                $ticket->random = $random;
+                $ticket->evento_id = $evento->id;
+                $ticket->user_id = $user->id;
+                $ticket->price_id = $type->id;
+                //$ticket->card_token = $card_token; //Si roban los tokens de la tarjeta podrían hacer recargos (aunque son de un solo uso)
+                $ticket->qr = $qr;
+                $ticket->hash = $hash;
+                $ticket->used_times = 0;
+                $ticket->used_limit = 1;
 
-            $ticket->save();
+                $ticket->save();
 
-            $type->availables --;
+                $type->availables --;
 
-        }
+            }
 
-        return 1;
+        return $charge;
  
-
-        } else {   return 0;   }
+        // } else {   return 0;   }
     }
 
         public function validateTicket($hash)

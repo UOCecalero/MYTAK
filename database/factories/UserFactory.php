@@ -26,6 +26,7 @@ $factory->define(App\User::class, function (Faker $faker) {
         'birthdate' => $faker->date($format = 'Y-m-d', $max = '-18 year'),
         'job' => $faker->jobTitle,
         'studies' => $faker->word,
+        'ranking' => 45.000,
         // 'genderpreference' =>  genderPreference(), //male, female, both
         'lat' => $faker->latitude($min = -90, $max = 90),
         'lng' => $faker->longitude($min = -180, $max = 180),

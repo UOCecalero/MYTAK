@@ -42,6 +42,8 @@ class UsersController extends Controller
         $user = Auth::user();
         $user->last_connection = Carbon::now('Europe/Madrid');
         $user->save();
+        $birthdate = $user->birthdate;
+        $user['age'] = (string)Carbon::createFromFormat('Y-m-d',$birthdate)->age;
         return $user;   
     }
 
@@ -280,7 +282,7 @@ class UsersController extends Controller
         //$user->email = $data['email'];
         $user->password = Hash::make($data['password']);
         $user->photo = $data['photo'];
-        //$user->birthdate = $data['birthdate'];
+        $user->birthdate = $data['birthdate'];
         $user->job = $data['job'];
         $user->studies = $data['studies'];
         //$user->aceptar = $data['aceptar'];
@@ -290,6 +292,10 @@ class UsersController extends Controller
         //$user->destacado_fin = $data['destacado_fin'];
         $user->lat = $data['lat'];
         $user->lng = $data['lng'];
+        $user->genderpreference = $data['genderpreference'];
+        $user->inagepreference  = $data['inagepreference'];
+        $user->outagepreference = $data['outagepreference'];
+        $user->eventdistance = $data['eventdistance'];
 
         $user->save();
 
@@ -493,8 +499,8 @@ class UsersController extends Controller
             *******************************************************************************************/
 
             /************ Esta es la version nueva donde se devuelve por bloques de X elementos *********/
-            $array = $sorted->values()->chunk(10);
-            return $array[$position -1];
+            $array = $sorted->chunk(10);
+            return $array[$position -1]->values();
                 
     }
 
@@ -702,7 +708,7 @@ class UsersController extends Controller
         $user = Auth::user();
         $bloqueados = $user->bloqueados;
 
-        if($bloqueados->isEmpty()){ abort(404,'No hay bloqueados'); }
+        if( empty($bloqueados) ){ abort(404,'No hay bloqueados'); }
         return $bloqueados;
     
     }
@@ -718,7 +724,7 @@ class UsersController extends Controller
         $user = Auth::user();
         $bloqueadores = $user->users;
 
-        if($bloqueadores->isEmpty()){ abort(404, 'No hay bloqueadores');}
+        if( empty($bloqueadores) ){ abort(404, 'No hay bloqueadores');}
         return $bloqueadores;
         
     }
@@ -750,7 +756,6 @@ class UsersController extends Controller
         abort_unless($user->bloqueados()->detach($bloqueado->id),404);
 
         return $bloqueado;
-
     }
 
 
@@ -762,8 +767,8 @@ class UsersController extends Controller
      */
     public function empresa()
     {
-        abort_unless($user = Auth::user()->empresa()->count(),404);
-        return $user->empresa();
+        if( empty(Auth::user()->empresa )){ abort(404, 'No tiene empresa');}
+        return $user->empresa;
     }
 
     /**
