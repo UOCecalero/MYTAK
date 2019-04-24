@@ -738,7 +738,7 @@ class UsersController extends Controller
     public function addbloqueado(User $bloqueado)
     {    
         $user = Auth::user();
-        abort_unless($user->bloqueados()->attach($bloqueado->id),404);
+        abort_unless($user->bloqueados->attach($bloqueado->id),404);
 
         return $bloqueado;
 
@@ -753,7 +753,7 @@ class UsersController extends Controller
     public function delbloqueado( User $bloqueado)
     {
         $user = Auth::user();
-        abort_unless($user->bloqueados()->detach($bloqueado->id),404);
+        abort_unless($user->bloqueados->detach($bloqueado->id),404);
 
         return $bloqueado;
     }
