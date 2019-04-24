@@ -767,7 +767,8 @@ class UsersController extends Controller
      */
     public function empresa()
     {
-        if( empty(Auth::user()->empresa )){ abort(404, 'No tiene empresa');}
+        $user = Auth::user();
+        if( empty($user->empresa )){ abort(404, 'No tiene empresa');}
         return $user->empresa;
     }
 
