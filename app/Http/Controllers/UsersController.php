@@ -276,15 +276,15 @@ class UsersController extends Controller
 
         //$user->FBid = $data['FBid'];
         //$user->last_connection =$data('last_connection');
-        $user->name = $data['name'];
-        $user->surnames = $data['surnames'];
-        $user->gender = $data['gender'];
+        $user->name = $data['name'] ?? user->name;
+        $user->surnames = $data['surnames'] ?? $user->surnames;
+        $user->gender = $data['gender'] ??  $user->gender;
         //$user->email = $data['email'];
-        $user->password = Hash::make($data['password']);
-        $user->photo = $data['photo'];
-        $user->birthdate = $data['birthdate'];
-        $user->job = $data['job'];
-        $user->studies = $data['studies'];
+        $user->password = Hash::make($data['password'] ?? $user->password);
+        $user->photo = $data['photo'] ?? $user->photo;
+        $user->birthdate = $data['birthdate'] ?? $user->birthdate;
+        $user->job = $data['job'] ?? $user->job;
+        $user->studies = $data['studies'] ??;
         //$user->aceptar = $data['aceptar'];
         //$user->saludar = $data['saludar'];
         //$user->rechazar = $data['rechazar'];
