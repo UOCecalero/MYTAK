@@ -276,7 +276,7 @@ class UsersController extends Controller
 
         //$user->FBid = $data['FBid'];
         //$user->last_connection =$data('last_connection');
-        $user->name = $data['name'] ?? user->name;
+        $user->name = $data['name'] ?? $user->name;
         $user->surnames = $data['surnames'] ?? $user->surnames;
         $user->gender = $data['gender'] ??  $user->gender;
         //$user->email = $data['email'];
@@ -284,18 +284,18 @@ class UsersController extends Controller
         $user->photo = $data['photo'] ?? $user->photo;
         $user->birthdate = $data['birthdate'] ?? $user->birthdate;
         $user->job = $data['job'] ?? $user->job;
-        $user->studies = $data['studies'] ??;
+        $user->studies = $data['studies'] ?? $user->studies;
         //$user->aceptar = $data['aceptar'];
         //$user->saludar = $data['saludar'];
         //$user->rechazar = $data['rechazar'];
         //$user->destacado_ini = $data['destacado_ini'];
         //$user->destacado_fin = $data['destacado_fin'];
-        $user->lat = $data['lat'];
-        $user->lng = $data['lng'];
-        $user->genderpreference = $data['genderpreference'];
-        $user->inagepreference  = $data['inagepreference'];
-        $user->outagepreference = $data['outagepreference'];
-        $user->eventdistance = $data['eventdistance'];
+        $user->lat = $data['lat'] ?? $user->lat;
+        $user->lng = $data['lng'] ?? $user->lng;
+        $user->genderpreference = $data['genderpreference'] ?? $user->genderpreference;
+        $user->inagepreference  = $data['inagepreference'] ?? $user->inagepreference;
+        $user->outagepreference = $data['outagepreference'] ?? $user->outagepreference;
+        $user->eventdistance = $data['eventdistance'] ?? $user->eventdistance;
 
         $user->save();
 
