@@ -279,6 +279,7 @@ class UsersController extends Controller
         $user->name = $data['name'] ?? $user->name;
         $user->surnames = $data['surnames'] ?? $user->surnames;
         $user->gender = $data['gender'] ??  $user->gender;
+        $user->lema = $data['lema'] ??  $user->lema;
         //$user->email = $data['email'];
         $user->password = Hash::make($data['password'] ?? $user->password);
         $user->photo = $data['photo'] ?? $user->photo;
