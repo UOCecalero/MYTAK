@@ -36,7 +36,7 @@ const subredis = new Redis(); //Cliente redis en modo Sub
             //Comprueba que no hay otro socket con la misma id. Si existe lo elimina.
             if (redis.exists(token)){ redis.del(token) }
             redis.set(token, sessionid);
-            redis.expire(token, 600); //Le damos un tiempo de expiración al set (1min
+            redis.expire(token, 60); //Le damos un tiempo de expiración al set (1min
 
              });
 
