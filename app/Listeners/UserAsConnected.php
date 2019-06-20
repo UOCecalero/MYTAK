@@ -29,7 +29,7 @@ class UserAsConnected
     {
 
         $client = new \GuzzleHttp\Client();
-        $httpResponse = $client->get( 'http://192.168.1.18:60000/api/me', [
+        $httpResponse = $client->get( env('URL')'api/me', [
                 'headers' => [
                     'Accept' => 'application/json',
                     'Authorization' => 'Bearer '.$event->token,
