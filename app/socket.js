@@ -5,12 +5,25 @@ var io = require('socket.io').listen(61001);
 const RedisServer = require('redis-server');
 var Redis = require("ioredis"); 
 
-var redis = new Redis(); //Cliente Redis en modo normal
-var pubredis = new Redis(); //Cliente Redis en modo pub
-const subredis = new Redis(); //Cliente redis en modo Sub
-      subredis.subscribe(/** 'ports', **/'outcomeMessage', 'alerts', 'admin', function (err, count) {
+const redis = new Redis({
+    port: 6379,          // Redis port
+    host: '127.0.0.1',   // Redis host
+    family: 4,           // 4 (IPv4) or 6 (IPv6)
+    db: 1
+
+  }); //Cliente Redis en modo clave valor
+
+const pubredis = new Redis(); //Cliente Redis en modo pub
+const subredis = new Redis({
+    port: 6379,          // Redis port
+    host: '127.0.0.1',   // Redis host
+    family: 4,           // 4 (IPv4) or 6 (IPv6)
+    db: 0
+
+  }); //Cliente redis en modo Sub
+      subredis.subscribe('outcomeMessage', 'alerts', 'admin', function (err, count) {
         //Hacer algo con el error de redis al suscribirse
-        //Coun devuelve el numero de canales a los que estamos suscritos
+        console.log( "Listening in "+count+" channels");
       });
 
 // // Inicializamos el servidor redis
@@ -31,13 +44,14 @@ const subredis = new Redis(); //Cliente redis en modo Sub
 
         //El usuario conectado se identifica a través del token para evitar suplantaciones
          socket.on('clientConnected', function(token) {
-            console.log("User: "+token+" SocketID: "+sessionid+"\n");
+            // console.log("User: "+token+" SocketID: "+sessionid+"\n");
 
-            //Comprueba que no hay otro socket con la misma id. Si existe lo elimina.
-            if (redis.exists(token)){ redis.del(token) }
-            redis.set(token, sessionid);
-            redis.expire(token, 60); //Le damos un tiempo de expiración al set (1min
+            const object = { "token" : token, "port" : sessionid } ;
+            const JSONObject = JSON.stringify(object);
+            console.log("UserConnected :"+JSONObject );
 
+            //Manda el token por el canal de puertos para hacer algunas comprobaciones. Si se pasan es devuelto por setPorts
+            pubredis.publish('ports', JSONObject);
              });
 
          //Al recibir un  mensaje por alguno de los canales devuelve el canal y el mensaje
@@ -52,26 +66,19 @@ const subredis = new Redis(); //Cliente redis en modo Sub
                         case 'outcomeMessage':  
                         //Si es para el canal outcomeMessage, comprobamos si receptor esta conectado
 
-                              redis.get(message.receptor, function(err, result){
-                                    
-                                    if (err){ 
-                                              //Si no esta conectado muestra un error por consola
-                                              console.log("Error :"+err); 
-
-                                    } else { 
-
+                              console.log(message);
+                              const messageObject = JSON.parse(message);
+                              console.log("GET user:"+messageObject.receptor);
+                              redis.get("user:"+messageObject.receptor)
+                                    .then(function(result){ 
                                           //Si su id (token) esta en nuestra BBDD Redis, nos devuelve el socket 
-                                          const destinyID = result;
                                           console.log("Message to socket: "+result);
-                                          socket.broadcast.to(destinyID).emit('privateMessage', function(message){
-
-                                              //Aqui ya se puede actualizar message con el checked == true
-                                              //Despues indicar al emisor que ha sido recibido para que cambie el tick
-
-                                          });
-                                    }    
-
-                              });
+                                          socket.broadcast.to(result).emit('privateMessage', message);
+                                        })
+                                    .catch(function(err){
+                                              //Si no esta conectado muestra un error por consola
+                                              console.log("Error al obtener el puerto de envío :"+err);
+                                              });
 
                         break;
 
@@ -90,24 +97,31 @@ const subredis = new Redis(); //Cliente redis en modo Sub
          //Esto es un mensaje enviado por el cliente
          socket.on('privateMessage', function(tokenAndMessage) {
 
-            console.log("Message :"+tokenAndMessage);
+            // const tokenAndMessageJSON = JSON.stringify(tokenAndMessage);
+            // const portJSON = JSON.stringify( {"port" : sessionid } );
+            // const JSONObject = tokenAndMessageJSON + portJSON;
+
+            tokenAndMessage['port'] = sessionid;
+            const JSONObject = JSON.stringify( tokenAndMessage );
+
+            console.log("Message :"+JSONObject );
             //Aqui hay que un mensaje por el canal de entrada de mensajes para que lo procese Laravel y lo lance por el canal messages (el canal de salida de mensajes si lo considera oportino después de almacenar el mensaje y hacer las comprobaciones pertinentes) 
-            pubredis.publish('incomeMessage', tokenAndMessage);
-
-         });
-
-         socket.on('clientDisconnected', function( token ) {
-
-            //Aqui hay que un mensaje por el canal de entrada de mensajes para que lo procese Laravel y lo lance por el canal messages (el canal de salida de mensajes si lo considera oportino después de almacenar el mensaje y hacer las comprobaciones pertinentes) 
-            redis.del(token);
+            pubredis.publish('incomeMessage', JSONObject);
 
          });
 
          //Whenever someone disconnects this piece of code executed
          socket.on('disconnect', function () {
-            console.log('A user disconnected');
-            subredis.del();
-            redis.del();
+
+            redis.get("port:"+sessionid)
+            .then(function(id){  
+                redis.del("port:"+sessionid); 
+                redis.del("user:"+id);
+              })
+            .catch(function(error){  console.log("ERROR :"+error) });
+
+            // subredis.quit();
+            // redis.quit();
          });
 
 

@@ -19,9 +19,11 @@ class ClientConnected
      *
      * @return void
      */
-    public function __construct(Message $helloMessage)
+    public function __construct($tokenAndPort)
     {
-        $this->hello = $helloMessage;
+        $decoded = json_decode($tokenAndPort);
+        $this->token = $decoded->token;
+        $this->port = $decoded->port;
     }
 
     /**

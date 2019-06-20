@@ -19,10 +19,14 @@ class MensajeRecibido
      *
      * @return void
      */
-    public function __construct($token, $message)
+    public function __construct($portAndMessage)
     {
-        $this->token = $token;
-        $this->message = $message;
+        $decoded = json_decode($portAndMessage);
+
+        $this->token = $decoded->token;
+        $this->message = $decoded->message;
+        $this->receptor = $decoded->receptor;
+        $this->port = $decoded->port;
 
     }
 

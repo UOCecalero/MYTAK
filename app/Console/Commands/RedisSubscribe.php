@@ -43,12 +43,32 @@ class RedisSubscribe extends Command
         //     event(new ClientConnected($helloMessage));
         // });
 
-        Redis::subscribe(['incomeMessage'], function ($tokenAndMessage) {
-             
-             $data = json_decode($tokenAndMessage);
-             $token = $data->token;
-             $message = $data->message;
-             event(new \App\Events\MensajeRecibido($token, $message));
+        $redisSubscribe = Redis::connection();
+        // $redisPorts = new \Predis\Client([
+        //     'host'     => '127.0.0.1', 
+        //     'password' => null, 
+        //     'database' => 0,
+        //     // 'read_write_timeout' => 0,
+        //     ]); 
+
+        $redisSubscribe->subscribe(['incomeMessage', 'outcomeMessage', 'ports' ], function ($message, $channel) {
+
+            switch ($channel) {
+                case 'ports':
+                    //message contiene el token del usuario conectado
+                    event(new \App\Events\ClientConnected($message));
+                break;
+                
+                case 'incomeMessage':
+                    //message contiene token (emisor), mensaje, receptor y puerto (socket emisor)
+                    event(new \App\Events\MensajeRecibido($message));
+                break;
+
+                default:
+                    echo "outcomeMessage \n";
+                break;
+            }
+  
         });
 
         //Alerts no necesita estar suscrito ya que es canal solo de salida
