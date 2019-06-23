@@ -48,7 +48,8 @@ const subredis = new Redis({
 
             const object = { "token" : token, "port" : sessionid } ;
             const JSONObject = JSON.stringify(object);
-            console.log("UserConnected :"+JSONObject );
+            // console.log("UserConnected :"+JSONObject );
+            console.log("Token received!" );
 
             //Manda el token por el canal de puertos para hacer algunas comprobaciones. Si se pasan es devuelto por setPorts
             pubredis.publish('ports', JSONObject);
@@ -73,7 +74,10 @@ const subredis = new Redis({
                                     .then(function(result){ 
                                           //Si su id (token) esta en nuestra BBDD Redis, nos devuelve el socket 
                                           console.log("Message to socket: "+result);
-                                          socket.broadcast.to(result).emit('privateMessage', message);
+                                           socket.broadcast.to(result).emit('privateMessage', messageObject );
+                                           // socket.broadcast.to(result).emit('privateMessage', messageObject, function(checkedValue){
+
+                                           // } );
                                         })
                                     .catch(function(err){
                                               //Si no esta conectado muestra un error por consola
@@ -95,7 +99,7 @@ const subredis = new Redis({
         });
 
          //Esto es un mensaje enviado por el cliente
-         socket.on('privateMessage', function(tokenAndMessage) {
+         socket.on('privateMessage', function(tokenAndMessage, ack) {
 
             // const tokenAndMessageJSON = JSON.stringify(tokenAndMessage);
             // const portJSON = JSON.stringify( {"port" : sessionid } );
@@ -107,6 +111,7 @@ const subredis = new Redis({
             console.log("Message :"+JSONObject );
             //Aqui hay que un mensaje por el canal de entrada de mensajes para que lo procese Laravel y lo lance por el canal messages (el canal de salida de mensajes si lo considera oportino después de almacenar el mensaje y hacer las comprobaciones pertinentes) 
             pubredis.publish('incomeMessage', JSONObject);
+            ack("OK");
 
          });
 
@@ -115,6 +120,8 @@ const subredis = new Redis({
 
             redis.get("port:"+sessionid)
             .then(function(id){  
+
+                console.log("User "+id+" disconnected from port "+sessionid);
                 redis.del("port:"+sessionid); 
                 redis.del("user:"+id);
               })

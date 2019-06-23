@@ -36,9 +36,14 @@ class UserAsConnected
                 ]
             ]);
 
-        if ( $httpResponse->getStatusCode() != 200 ){ /** Lanza un error **/ }
+        if ( $httpResponse->getStatusCode() != 200 ){ 
+            echo "No se ha podido obtener el usuario con el token".$event->token."\n"; 
+            return;
+        }
         $userConnected = json_decode( $httpResponse->getBody()->getContents());
-     
+        
+
+
         $redisCache = Redis::connection('cache');
         if ( $redisCache->exists("user:".$userConnected->id) ) { 
                  $oldPort = $redisCache->get("user:".$userConnected->id);
@@ -46,13 +51,10 @@ class UserAsConnected
 
          }
 
+
          $blockCommands = $redisCache->pipeline();
          $blockCommands->set("user:".$userConnected->id, $event->port);
-         $blockCommands->expire("user:".$userConnected->id, 40);
-
          $blockCommands->set("port:".$event->port, $userConnected->id);
-         $blockCommands->expire( "port:".$event->port, 40);
-
          $blockCommands->execute();
          $redisCache->quit();
 

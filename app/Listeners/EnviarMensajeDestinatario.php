@@ -31,6 +31,8 @@ class EnviarMensajeDestinatario
             $emisorId = $redis->get('port:'.$event->port);
             $redis->quit();
 
+            echo "SEARCHING emisor ".$emisorId." and receptor ".$event->receptor."\n";
+
             $emisor = \App\User::findOrFail($emisorId);
             $receptor = \App\User::findOrFail($event->receptor);
 
@@ -48,12 +50,15 @@ class EnviarMensajeDestinatario
             $message->emisor = $emisor->id;
             $message->receptor = $receptor->id;
             $message->receptor_token = $receptor->tokens[0]->id; //Alternativa sin almacenar $message["receptor_token"] = $receptor_token;
+            $message->checked = 0;
+            $message->caducado = 0;
             $message->texto = $event->message;
 
             $message->save();
 
             $time = $message->created_at;
             $message["time"] = $time->toTimeString();
+            $message["whois"] = "receptor";
 
             $redisPublishMessages = new \Predis\Client();
             $redisPublishMessages->publish('outcomeMessage', json_encode($message) );
