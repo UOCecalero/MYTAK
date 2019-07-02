@@ -151,22 +151,26 @@ class UsersController extends Controller
          //En este else se entra si hay exactamente un usuario con ese email
           else { $user = $collection[0]; }
 
-        
+        //Crea un accessToken nuevo tanto si existe ya uno como si no. Si existe alguno lo elimina.
         if( isset( $user->tokens[0]) ){ $user->tokens[0]->delete(); };
         $accesstoken = $user->createToken('accessToken')->accessToken;
-        if ($devicetoken) { $user->devicetoken = $devicetoken; }
+        
+	//Si recibe un deviceToken para las notificaciones push lo guarda. Si hay uno antiguo, sobreescribe.
+	if ($devicetoken) { $user->devicetoken = $devicetoken; }
         $user->save();
+	
+	
+        //Si no tiene una foto guardada. Intenta guardar la que tiene en facebook siempre y cuando no sea la genérica.
+	if ( !isset($user->photo) ) {
 
-        //Se tiene que hacer aquí sino user_id aún no existe
-        if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
+        if ( $facebookPhotoUrl = $data['picture']['data']['url']  ) {
 
-          //Aqui haremos un file download o error con Storage::download
 
                 if ( $contents = file_get_contents($facebookPhotoUrl) ){
 
                         //De la url que devuelve, coge como nombre la cadena que hay despues del igual y le añade .jpg al final
                         $name = substr($facebookPhotoUrl, strrpos($facebookPhotoUrl, '=', -1) + 1).".jpg";
-                        if ( Storage::disk('local')->put('avatars/'.$name, $contents); ){
+                        if ( Storage::disk('public')->put('avatars/'.$name, $contents) ){
 
                           //$path = asset('storage/'.$name); //asset y scure_asset no se de donde cogen la URL del server
                           $path = env('URL')."storage/avatars/".$name;
@@ -186,7 +190,7 @@ class UsersController extends Controller
                     }
             }
 
-
+	}
         return $accesstoken;
         
 
