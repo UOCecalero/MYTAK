@@ -58,12 +58,10 @@ class UsersController extends Controller
     {   
         //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
-              // 'app_id' => '643164375870720',
               'app_id' => '261908097712873',
-              // 'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
               'app_secret' => 'e783ded20404501e301c13b7c2afc71f',
               'default_access_token' => $token,
-              'default_graph_version' => 'v3.0',
+              'default_graph_version' => 'v3.3',
               ]);
 
 
@@ -73,23 +71,21 @@ class UsersController extends Controller
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
           // When Graph returns an error
           echo 'Graph returned an error: ' . $e->getMessage();
-          return 0;
+          exit;
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
           // When validation fails or other local issues
           echo 'Facebook SDK returned an error: ' . $e->getMessage();
-          return 0;
+          exit;
         }
 
-        //return var_dump($resp)
-
         $data = $resp->getDecodedBody();
-
         $collection = User::where('email', $data['email'] )->get();
 
         $number = $collection->count();
 
 
-        if ($number > 1) { throw new Exception("Error: Many users with this FBid", 1);
+        if ($number > 1) { 
+          throw new Exception("Error: Many users with this FBid", 1);
         }
 
         //Si el usuario no existe en el sistema
@@ -164,21 +160,28 @@ class UsersController extends Controller
         //Se tiene que hacer aquí sino user_id aún no existe
         if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
 
+          //Aqui haremos un file download o error con Storage::download
+
                 if ( $contents = file_get_contents($facebookPhotoUrl) ){
 
                         //De la url que devuelve, coge como nombre la cadena que hay despues del igual y le añade .jpg al final
                         $name = substr($facebookPhotoUrl, strrpos($facebookPhotoUrl, '=', -1) + 1).".jpg";
-                        Storage::disk('local')->put($name, $contents);
-                        $path = asset('storage/'.$name);
-                        $archive = new Archive;
-                        $archive->user_id = $user->id;
-                        $archive->path = $path;
-                        $archive->position = 1;
-                        $archive->type = 1;
-                        $archive->save();
+                        if ( Storage::disk('local')->put('avatars/'.$name, $contents); ){
 
-                        $user->photo = $path;
-                        $user->save();
+                          //$path = asset('storage/'.$name); //asset y scure_asset no se de donde cogen la URL del server
+                          $path = env('URL')."storage/avatars/".$name;
+
+                          $archive = new Archive;
+                          $archive->user_id = $user->id;
+                          $archive->path = $path;
+                          $archive->position = 1;
+                          $archive->type = 1;
+                          $archive->save();
+
+                          $user->photo = $path;
+                          $user->save();
+                        }
+                        
 
                     }
             }

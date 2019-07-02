@@ -40,11 +40,10 @@ class ArchiveController extends Controller
             //Al usar php artisan storage:link se genera un enlace simbolico a la carpeta public accesible desde el exterior
             $path = request()->file('avatar')->store('public/avatars');
 
-            //basename extrae el nombre (UUID) de la direecion que devuelve la URI anterior
+            //basename extrae el nombre (UUID) de la dirección que devuelve la URI anterior
             $path = env('URL')."storage/avatars/".basename($path);
 
             foreach ($avatars as $avatar) {
-
                 $avatar->position ++;
                 $avatar->save();
             }
