@@ -53,6 +53,15 @@ return [
             'driver' => 'null',
         ],
 
+        'apn' => [
+            'is_production' => env('APP_ENV') === 'production',
+            'key_id' => env('APN_KEY_ID'),
+            'team_id' => env('APN_TEAM_ID'), // The Team ID of your Apple Developer Account (available at https://developer.apple.com/account/#/membership/)
+            'app_bundle_id' => env('APN_APP_BUNDLE_ID'), // The Bundle ID of your application. For example, "com.company.application"
+            'private_key_path' => env('APN_PRIVATE_KEY', storage_path('AuthKey_G3GN5GNPA2.p8')),
+            'private_key_secret' => env('APN_PRIVATE_KEY_SECRET'),
+        ],
+
     ],
 
 ];
