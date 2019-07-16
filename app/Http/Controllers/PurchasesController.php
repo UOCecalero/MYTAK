@@ -61,7 +61,7 @@ class PurchasesController extends Controller
         $users = $users->forget($user->id);
 
 
-        if ( $users->count() == 0 ) { return 0; } //Si no hay usuarios devuelve un 0
+        if ( $users->count() == 0 ) { return $users; } //Si no hay usuarios devuelve la colección vacía
 
 
 
