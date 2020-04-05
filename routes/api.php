@@ -19,7 +19,7 @@ use App\Http\Controllers\Auth\RegisterController;
 
 Route::get('/test', 'UsersController@index' );
 
-Route::get('/token/{token}/{devicetoken}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestro
+Route::get('/token/{token}/{devicetoken}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestrotoken
 
 Route::middleware('auth:api')->get('/me', 'UsersController@me');
 
@@ -42,7 +42,7 @@ Route::middleware('auth:api')->get('/me/ticket', 'PurchasesController@show'); //
 
 Route::middleware('auth:api')->get('/me/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
 
-Route::middleware('auth:api')->get('/me/timeline/{position}/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+Route::middleware('auth:api')->get('/me/timeline/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
 
 Route::middleware('auth:api')->get('/me/ticket/{ticket}' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
@@ -102,7 +102,7 @@ Route::middleware('auth:api')->delete('/empresa/{empresa}/bloqueado/{bloqueado}'
 /******************************* Evento interface **********************************************/
 
 //La devolución de los eventos solo se hace en base a ciertos parámetros
-//Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
+Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK   ===> Esta sin comentar para hacer pruebas
 //Route::middleware('auth:api')->post('/eventos', 'EventosController@index'); //Futuro método pasar parametros
 
 
