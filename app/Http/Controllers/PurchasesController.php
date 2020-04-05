@@ -12,6 +12,9 @@ use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Auth;
 use Stripe\{Stripe, Charge, Customer};
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class PurchasesController extends Controller
 {
@@ -183,11 +186,11 @@ class PurchasesController extends Controller
 
      $tickets = $user->tickets;
 
-     if ($tickets->isEmpty()){ return null; }
+     if ($tickets->isEmpty()){ return []; }
     
         else{ 
 
-            return $tickets; 
+            return $this->paginate($tickets); 
         }
      
     }
@@ -323,5 +326,22 @@ class PurchasesController extends Controller
 
     }
 
+
+    /**
+      * Genera paginación a partir de los ítems de una colección.
+      *
+      * @param array|Collection      $items
+      * @param int   $perPage
+      * @param int  $page
+      * @param array $options
+      *
+      * @return LengthAwarePaginator
+      */
+    public function paginate($items, $perPage = 15, $page = null, $options = [])
+    {
+      $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+      $items = $items instanceof Collection ? $items : Collection::make($items);
+      return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
+    }
 
 }
