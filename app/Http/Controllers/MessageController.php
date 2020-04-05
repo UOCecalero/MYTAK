@@ -32,7 +32,7 @@ class MessageController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Obtiene los mensajes de la conversacion (que no esten caducados) entre el usuario que hace la petición y el interlocutor indicado
      *
      * @return \Illuminate\Http\Response
      */
@@ -124,10 +124,7 @@ class MessageController extends Controller
                 $message->receptor_token = null;
             }
             
-
             $message->texto = $data['texto'];
-
-
             $message->save();
 
 
@@ -135,9 +132,7 @@ class MessageController extends Controller
             $message["time"] = $time->toTimeString();
 
 
-            Redis::publish('messages', json_encode([ $message ]) );
-
-            return $message;
+            Redis::publish('outcomeMessage', json_encode([ $message ]) );
 
         }
 

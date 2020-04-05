@@ -10,7 +10,7 @@ $factory->define(App\Empresa::class, function (Faker $faker) {
         'name' => $empresaName,
         //'creator' => $faker,
         'email' => $faker->unique()->companyEmail,
-        'pwd' => $password ?: $password = bcrypt('secret'),
+        'pwd' => $password = bcrypt('secret'),
         'web' => 'https://www.' . $empresaName . '.com',
     ];
 });

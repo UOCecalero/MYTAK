@@ -43,8 +43,6 @@ class EmpresasController extends Controller
     {   
         $user = Auth::user();
 
-        if( ($user->id) && ($user->id == $request->creator))
-        {
         $empresa = new Empresa;
 
         $empresa->name = $request->name;
@@ -56,8 +54,6 @@ class EmpresasController extends Controller
         $empresa->save();
 
         return $empresa;
-
-        } else return 0;
         
     }
 
@@ -73,6 +69,7 @@ class EmpresasController extends Controller
 
         return $empresa;
     }
+
 
     /**
      * Muestra los eventos propiedad de una empresa 

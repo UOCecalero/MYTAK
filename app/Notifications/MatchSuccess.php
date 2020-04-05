@@ -2,8 +2,6 @@
 
 namespace App\Notifications;
 
-use App\User;
-use Appp\Evento;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,10 +17,9 @@ class MatchSuccess extends Notification
      *
      * @return void
      */
-    public function __construct(User $with, Evento $event)
+    public function __construct()
     {
-        $this->user = $with->name;
-        $this->evento = $event->nombre; 
+        //
     }
 
     /**
@@ -60,9 +57,8 @@ class MatchSuccess extends Notification
     {
         return ApnMessage::create()
             ->badge(1)
-            ->title("¡MATCH!")
-            ->body("$this->user también va a ir a $this->evento y quiere concerte");
-            // ->sound()
+            ->title('IFLET.TECH')
+            ->body("Próximamente guia completa de APN!");
     }
 
     /**

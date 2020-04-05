@@ -17,8 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/validate-token', function () {
+    return ['data' => 'Token is valid'];
+})->middleware('auth:api');
 
 Route::get('/home', 'HomeController@index');

@@ -45,6 +45,8 @@ class UsersController extends Controller
         $user = Auth::user();
         $user->last_connection = Carbon::now('Europe/Madrid');
         $user->save();
+        $birthdate = $user->birthdate;
+        $user['age'] = (string)Carbon::createFromFormat('Y-m-d',$birthdate)->age;
         return $user;   
     }
 
@@ -59,10 +61,10 @@ class UsersController extends Controller
     {   
         //Hace una llamada a Facebook para comprobar que el token es bueno
         $fb = new \Facebook\Facebook([
-              'app_id' => '643164375870720',
-              'app_secret' => 'd3711281587ece2e39a41d97791b75a0',
+              'app_id' => '261908097712873',
+              'app_secret' => 'e783ded20404501e301c13b7c2afc71f',
               'default_access_token' => $token,
-              'default_graph_version' => 'v4.0',
+              'default_graph_version' => 'v3.3',
               ]);
 
 
@@ -72,23 +74,21 @@ class UsersController extends Controller
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
           // When Graph returns an error
           echo 'Graph returned an error: ' . $e->getMessage();
-          return 0;
+          exit;
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
           // When validation fails or other local issues
           echo 'Facebook SDK returned an error: ' . $e->getMessage();
-          return 0;
+          exit;
         }
 
-        //return var_dump($resp)
-
         $data = $resp->getDecodedBody();
-
         $collection = User::where('email', $data['email'] )->get();
 
         $number = $collection->count();
 
 
-        if ($number > 1) { throw new Exception("Error: Many users with this FBid", 1);
+        if ($number > 1) { 
+          throw new Exception("Error: Many users with this FBid", 1);
         }
 
         //Si el usuario no existe en el sistema
@@ -121,25 +121,7 @@ class UsersController extends Controller
             $user->email = $data['email'];
             //$user->password = Hash::make($data['password']);
             if ($devicetoken) { $user->devicetoken = $devicetoken; }
-            
-            if ( $facebookPhotoUrl = $data['picture']['data']['url'] ) {
-
-                if ( $contents = file_get_contents($facebookPhotoUrl) ){
-
-                        $path = Storage::disk('local')->put('avatars');
-                        $archive = new Archive;
-                        $archive->user_id = $user->id;
-                        $archive->path = $path;
-                        $archive->position = 1;
-                        $archive->type = 1;
-                        $archive->save();
-
-                        $user->photo = $path;
-
-                    }
-            }
-            
-            //$user->birthdate = $data['birthdate'];
+            $user->birthdate = Carbon::createFromFormat('m/d/Y',$data['birthday']);
             // $user->job = $data['job'];
             // $user->studies = $data['studies'];
             // $user->aceptar = $data['aceptar'];
@@ -149,15 +131,8 @@ class UsersController extends Controller
             // $user->destacado_fin = $data['destacado_fin'];
             // $user->lat = $data['lat'];
             // $user->lng = $data['lng'];
-            if ( $data['gender']== 'male') {
-
-
-              $user->genderpreference = 'female';
-
-            }  else {
-
-                $user->genderpreference = 'male';
-            }
+            if ( $data['gender']== 'male') {  $user->genderpreference = 'female'; }  
+            else { $user->genderpreference = 'male'; }
 
             /******************************** Calculamos el avg **********************/
             $collection = User::all(); 
@@ -179,13 +154,46 @@ class UsersController extends Controller
          //En este else se entra si hay exactamente un usuario con ese email
           else { $user = $collection[0]; }
 
-        
+        //Crea un accessToken nuevo tanto si existe ya uno como si no. Si existe alguno lo elimina.
         if( isset( $user->tokens[0]) ){ $user->tokens[0]->delete(); };
         $accesstoken = $user->createToken('accessToken')->accessToken;
-        if ($devicetoken) { $user->devicetoken = $devicetoken; }
+        
+	//Si recibe un deviceToken para las notificaciones push lo guarda. Si hay uno antiguo, sobreescribe.
+	if ($devicetoken) { $user->devicetoken = $devicetoken; }
         $user->save();
+	
+	
+        //Si no tiene una foto guardada. Intenta guardar la que tiene en facebook siempre y cuando no sea la genérica.
+	if ( !isset($user->photo) ) {
+
+        if ( $facebookPhotoUrl = $data['picture']['data']['url']  ) {
 
 
+                if ( $contents = file_get_contents($facebookPhotoUrl) ){
+
+                        //De la url que devuelve, coge como nombre la cadena que hay despues del igual y le añade .jpg al final
+                        $name = substr($facebookPhotoUrl, strrpos($facebookPhotoUrl, '=', -1) + 1).".jpg";
+                        if ( Storage::disk('public')->put('avatars/'.$name, $contents) ){
+
+                          //$path = asset('storage/'.$name); //asset y scure_asset no se de donde cogen la URL del server
+                          $path = env('URL')."storage/avatars/".$name;
+
+                          $archive = new Archive;
+                          $archive->user_id = $user->id;
+                          $archive->path = $path;
+                          $archive->position = 1;
+                          $archive->type = 1;
+                          $archive->save();
+
+                          $user->photo = $path;
+                          $user->save();
+                        }
+                        
+
+                    }
+            }
+
+	}
         return $accesstoken;
         
 
@@ -278,22 +286,27 @@ class UsersController extends Controller
 
         //$user->FBid = $data['FBid'];
         //$user->last_connection =$data('last_connection');
-        $user->name = $data['name'];
-        $user->surnames = $data['surnames'];
-        $user->gender = $data['gender'];
+        $user->name = $data['name'] ?? $user->name;
+        $user->surnames = $data['surnames'] ?? $user->surnames;
+        $user->gender = $data['gender'] ??  $user->gender;
+        $user->lema = $data['lema'] ??  $user->lema;
         //$user->email = $data['email'];
-        $user->password = Hash::make($data['password']);
-        $user->photo = $data['photo'];
-        //$user->birthdate = $data['birthdate'];
-        $user->job = $data['job'];
-        $user->studies = $data['studies'];
+        $user->password = Hash::make($data['password'] ?? $user->password);
+        $user->photo = $data['photo'] ?? $user->photo;
+        $user->birthdate = $data['birthdate'] ?? $user->birthdate;
+        $user->job = $data['job'] ?? $user->job;
+        $user->studies = $data['studies'] ?? $user->studies;
         //$user->aceptar = $data['aceptar'];
         //$user->saludar = $data['saludar'];
         //$user->rechazar = $data['rechazar'];
         //$user->destacado_ini = $data['destacado_ini'];
         //$user->destacado_fin = $data['destacado_fin'];
-        $user->lat = $data['lat'];
-        $user->lng = $data['lng'];
+        $user->lat = $data['lat'] ?? $user->lat;
+        $user->lng = $data['lng'] ?? $user->lng;
+        $user->genderpreference = $data['genderpreference'] ?? $user->genderpreference;
+        $user->inagepreference  = $data['inagepreference'] ?? $user->inagepreference;
+        $user->outagepreference = $data['outagepreference'] ?? $user->outagepreference;
+        $user->eventdistance = $data['eventdistance'] ?? $user->eventdistance;
 
         $user->save();
 
@@ -345,7 +358,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy()
+    public function destroy(User $user)
     {
         $user=Auth::user();
         $user->delete();
@@ -493,7 +506,12 @@ class UsersController extends Controller
                 return $element->points;
             });
 
+            /******* Esta es la version antigua donde se devuelve elemento por elemento *************
+            //Devuelve un error 404 si no hay mas eventos
+            if( empty($sorted->values()->get($position - 1)) ) { abort(404,'No hay mas eventos'); }
+
             return $sorted->values()->get($position - 1); //La resta es para que empiece a indexar en 1
+            *******************************************************************************************/
 
             /************ Esta es la version nueva donde se devuelve por bloques de X elementos *********/
             // $array = $sorted->chunk(10);
@@ -501,7 +519,6 @@ class UsersController extends Controller
             /************ Ultima versión donde se devuelve por páginas *********/
             return $this->paginate($sorted->values());
                 
-
     }
 
     // /**
@@ -569,7 +586,7 @@ class UsersController extends Controller
     {
             $user = User::find($user);
             $user->customer_id = $customerid;
-            return 1;        
+            return $user;        
 
     }
 
@@ -645,11 +662,6 @@ class UsersController extends Controller
                 if( $hayMatch->isEmpty() ){ return 1; } else { return 2; } 
 
                 }
-
-          
-
-
-
             
         }
     }
@@ -666,26 +678,15 @@ class UsersController extends Controller
 
         $res = Match::where('usuario1_id', $user->id)->where('usuario2_id', $match->id)->get(); 
 
-        if ($res->isEmpty())
-        {
-        
-        return 0;
-
-        } 
-        
-        else
-        
-        {   
+        if ($res->isEmpty()) { abort(404, "Usuario not found"); }  
 
             foreach ($res as $m) {
                 $id = $m->id;
                 Match::destroy($id);
             }
+
              //El numero de matches borrados (uno por evento)
              return count($res);
-        }
-        
-
     }
 
 
@@ -698,25 +699,14 @@ class UsersController extends Controller
     public function delmatchonevento(Evento $evento)
     {
         $res = Match::where('evento_id', $evento->id)->get(); 
-
-        if ($res->isEmpty())
-        {
+        if ($res->isEmpty()) { abort(404, "Macth not found");} 
         
-        return 0;
-
-        } 
-        
-        else
-        
-        {
             foreach ($res as $m) {
                 
                 $id = $m->id;
                 Match::destroy($id);
             }
              return count($res);
-        }
-        
 
     }
 
@@ -761,10 +751,9 @@ class UsersController extends Controller
     public function addbloqueado(User $bloqueado)
     {    
         $user = Auth::user();
+        abort_unless($user->bloqueados->attach($bloqueado->id),404);
 
-        $user->bloqueados()->attach($bloqueado->id);
-
-        return 1;
+        return $bloqueado;
 
     }
 
@@ -777,19 +766,19 @@ class UsersController extends Controller
     public function delbloqueado( User $bloqueado)
     {
         $user = Auth::user();
-        $user->bloqueados()->detach($bloqueado->id);
+        abort_unless($user->bloqueados->detach($bloqueado->id),404);
 
-        return 1;
-
+        return $bloqueado;
     }
 
-    /*** 
+
+    /**
      * Mostrar la empresa(s) de un user
      *
-     * @param  int  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showEmpresa()
+    public function empresa()
     {
         $user = Auth::user();
         //if( empty($user->empresa )){ abort(404, 'No tiene empresa');}

@@ -7,12 +7,13 @@
     "require": {
         "php": ">=5.6.4",
         "facebook/graph-sdk": "^5.6",
+        "fideloper/proxy": "^4.0",
         "laravel/framework": "5.7.*",
         "laravel/passport": "^7.0",
         "laravel/tinker": "~1.0",
         "nesbot/carbon": "^1.22",
         "predis/predis": "^1.1",
-        "fideloper/proxy": "^4.0",
+        "semyonchetvertnyh/laravel-apn-notification-channel": "^0.1.5",
         "simplesoftwareio/simple-qrcode": "~2",
         "stripe/stripe-php": "^6.1"
     },
