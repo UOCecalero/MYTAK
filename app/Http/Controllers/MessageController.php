@@ -59,7 +59,7 @@ class MessageController extends Controller
             return $msg;
         });
 
-        return $filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values();
+        return \App\Helpers\General\CollectionHelper::paginate($filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values());
 
         //Formato de los mensajes
 

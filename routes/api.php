@@ -42,9 +42,9 @@ Route::middleware('auth:api')->get('/me/ticket', 'PurchasesController@show'); //
 
 Route::middleware('auth:api')->get('/me/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
 
-Route::middleware('auth:api')->get('/me/timeline/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+Route::middleware('auth:api')->get('/me/timeline', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
 
-Route::middleware('auth:api')->get('/me/ticket/{ticket}' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
+Route::middleware('auth:api')->get('/me/ticket' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
 // Route::middleware('auth:api')->post('/user/{user}/evento/{evento}', 'UsersController@addevento'); //OK
 
@@ -59,7 +59,7 @@ Route::middleware('auth:api')->delete('/me/match/{match}', 'UsersController@delm
 Route::middleware('auth:api')->delete('/evento/{evento}/match', 'UsersController@delmatchonevento'); //OK
 //Esto elimina todos los match de un evento en concreto pero esta ruta debería de estar capada solo a administrador
 
-Route::middleware('auth:api')->get('/me/bloqueados', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
+Route::middleware('auth:api')->get('/me/bloqueados/{page}', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
 
 Route::middleware('auth:api')->get('/me/bloqueadores', 'UsersController@bloqueados'); //Debería devolver los que te tienen bloqueado
 

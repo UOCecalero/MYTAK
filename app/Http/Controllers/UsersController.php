@@ -47,7 +47,7 @@ class UsersController extends Controller
         $user->save();
         $birthdate = $user->birthdate;
         $user['age'] = (string)Carbon::createFromFormat('Y-m-d',$birthdate)->age;
-        return $user;   
+        return \App\Helpers\General\CollectionHelper::paginate(collect([$user]));   
     }
 
 
@@ -387,7 +387,7 @@ class UsersController extends Controller
 
         //if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
         if ($eventos->isEmpty()){ return []; }
-        return $this->paginate($eventos);
+        return \App\Helpers\General\CollectionHelper::paginate($eventos);
 
     }
 
@@ -398,12 +398,13 @@ class UsersController extends Controller
      * @param  int  $distance
      * @return \Illuminate\Http\Response
      */
-    public function orderevents(Int $distance, Int $page = null)
+    public function orderevents(Int $page = null)
     {   
 
         $user = Auth::user();
         $lat = $user->lat;
         $lng = $user->lng; 
+        $distance = $user->eventdistance ?? 25;
         
 
         //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto -> varable en la App Móvil**/ }
@@ -517,7 +518,9 @@ class UsersController extends Controller
             // $array = $sorted->chunk(10);
             // return $array[$position -1]->values();
             /************ Ultima versión donde se devuelve por páginas *********/
-            return $this->paginate($sorted->values());
+            //return \App\Helpers\General\CollectionHelper::paginate($sorted->values(),$page);
+            //return $sorted->values();
+            return \App\Helpers\General\CollectionHelper::paginate($sorted->values());
                 
     }
 
@@ -605,7 +608,7 @@ class UsersController extends Controller
         //if ($matches->isEmpty()){ abort(404,'No hay matches'); }
         if ($matches->isEmpty()){ return []; }
 
-        return $this->paginate($matches->values());
+        return \App\Helpers\General\CollectionHelper::paginate($matches->values());
     }
 
     /**
@@ -716,7 +719,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueados()
+    public function bloqueados(Int $page)
     {   
         $user = Auth::user();
         $bloqueados = $user->bloqueados;
@@ -782,7 +785,7 @@ class UsersController extends Controller
     {
         $user = Auth::user();
         //if( empty($user->empresa )){ abort(404, 'No tiene empresa');}
-        return $user->empresa;
+        return \App\Helpers\General\CollectionHelper::paginate(collect([$user->empresa]));
     }
 
     /**
@@ -806,23 +809,7 @@ class UsersController extends Controller
 
         else return 'La empresa que quieres borrar no corresponde a este usuario';
 
-    } 
-} **/
-
-  /**
-    * Genera paginación a partir de los ítems de una colección.
-    *
-    * @param array|Collection      $items
-    * @param int   $perPage
-    * @param int  $page
-    * @param array $options
-    *
-    * @return LengthAwarePaginator
-    */
-  public function paginate($items,$page = null, $perPage = 15, $options = [])
-  {
-    $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
-    return new LengthAwarePaginator($items, $items->count(), $perPage, $page, $options);
-  }
-
+    } **/
 }
+
+
