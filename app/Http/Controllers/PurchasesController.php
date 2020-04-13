@@ -190,7 +190,7 @@ class PurchasesController extends Controller
     
         else{ 
 
-            return $this->paginate($tickets); 
+            return \App\Helpers\General\CollectionHelper::paginate($tickets); 
         }
      
     }
@@ -354,24 +354,6 @@ class PurchasesController extends Controller
 
     
 
-    }
-
-
-    /**
-      * Genera paginación a partir de los ítems de una colección.
-      *
-      * @param array|Collection      $items
-      * @param int   $perPage
-      * @param int  $page
-      * @param array $options
-      *
-      * @return LengthAwarePaginator
-      */
-    public function paginate($items, $perPage = 15, $page = null, $options = [])
-    {
-      $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
-      $items = $items instanceof Collection ? $items : Collection::make($items);
-      return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 
 }

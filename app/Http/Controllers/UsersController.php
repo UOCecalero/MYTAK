@@ -373,7 +373,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function userevents()
+    public function userevents(Array $options = [])
     {   
 
       $user = Auth::user();
@@ -387,7 +387,7 @@ class UsersController extends Controller
 
         //if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
         if ($eventos->isEmpty()){ return []; }
-        return \App\Helpers\General\CollectionHelper::paginate($eventos);
+        return \App\Helpers\General\CollectionHelper::paginate($eventos, 10);
 
     }
 
@@ -398,7 +398,7 @@ class UsersController extends Controller
      * @param  int  $distance
      * @return \Illuminate\Http\Response
      */
-    public function orderevents(Int $page = null)
+    public function orderevents(Array $options = [])
     {   
 
         $user = Auth::user();

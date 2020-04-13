@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 
 class CollectionHelper
 {
-    public static function paginate(Collection $results, $total = null, $pageSize = 20)
+    public static function paginate(Collection $results, Int $pageSize = 20, Int $total = null)
     {
         //$page = Paginator::resolveCurrentPage('page');
         $page = Paginator::resolveCurrentPage();
@@ -36,6 +36,7 @@ class CollectionHelper
      */
     protected static function paginator($items, $total, $perPage, $currentPage, $options)
     {
+        $items = $items->values();
         return Container::getInstance()->makeWith(LengthAwarePaginator::class, compact(
             'items', 'total', 'perPage', 'currentPage', 'options'
         ));

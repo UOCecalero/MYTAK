@@ -40,9 +40,9 @@ Route::middleware('auth:api')->get('/me/ticket', 'PurchasesController@show'); //
 
 //Route::middleware('auth:api')->patch('/user/{user}', 'UsersController@index');
 
-Route::middleware('auth:api')->get('/me/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
+Route::middleware('auth:api')->get('/me/evento/{options?}', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
 
-Route::middleware('auth:api')->get('/me/timeline', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+Route::middleware('auth:api')->get('/me/timeline/{options?}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
 
 Route::middleware('auth:api')->get('/me/ticket' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
@@ -79,23 +79,23 @@ Route::middleware('auth:api')->delete('/me/empresa/{empresa}', 'EmpresasControll
 
 /****************************** Empresa interface ******************************************/
 
-Route::middleware('auth:api')->get ('/empresa','EmpresasController@index'); //OK
+Route::middleware('auth:api')->get ('me/empresa','UsersController@empresa'); //OK
 
-Route::middleware('auth:api')->get ('/empresa/{empresa}','EmpresasController@show'); //OK
+Route::middleware('auth:api')->get ('me/empresa/{empresa}','EmpresasController@show'); //OK
 
-Route::middleware('auth:api')->get ('/empresa/{empresa}/eventos','EmpresasController@showeventos'); //OK
+Route::middleware('auth:api')->get ('me/empresa/{empresa}/eventos','EmpresasController@showeventos'); //OK
 
-Route::middleware('auth:api')->post ('/empresa/{empresa}/evento','EventosController@store'); //OK
+Route::middleware('auth:api')->post ('me/empresa/{empresa}/evento','EventosController@store'); //OK
 
-Route::middleware('auth:api')->delete ('/empresa/{empresa}/evento/{evento}','EventosController@destroy');
+Route::middleware('auth:api')->delete ('me/empresa/{empresa}/evento/{evento}','EventosController@destroy');
 
-//Route::middleware('auth:api')->patch ('/empresa/{empresa}/evento/{evento}','EmpresasController@index ');
+//Route::middleware('auth:api')->patch ('me/empresa/{empresa}/evento/{evento}','EmpresasController@index ');
 
-Route::middleware('auth:api')->get('/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados'); //OK
+Route::middleware('auth:api')->get('me/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados'); //OK
 
-Route::middleware('auth:api')->post('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado');//OK
+Route::middleware('auth:api')->post('me/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado');//OK
 
-Route::middleware('auth:api')->delete('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@delbloqueado');
+Route::middleware('auth:api')->delete('me/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@delbloqueado');
 //OK
 
 
