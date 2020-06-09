@@ -39,9 +39,7 @@ class MessageController extends Controller
     public function get(User $receptor)
     {
         $me = Auth::user();
-
         $emitidos = $me->messages->where('caducado',0)->where('receptor', $receptor->id);
-
         $recibidos = Message::all()->where('caducado',0)->where('receptor', $me->id)->where('emisor', $receptor->id);
         
         //marca el checked antes de entregar los mensajes
@@ -59,7 +57,7 @@ class MessageController extends Controller
             return $msg;
         });
 
-        return \App\Helpers\General\CollectionHelper::paginate($filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values());
+        return \App\Helpers\General\CollectionHelper::paginate($filtered->sortBy(function ($msg, $key) { return $msg['created_at']; })->values(), 200);
 
         //Formato de los mensajes
 
@@ -90,8 +88,7 @@ class MessageController extends Controller
         $data = $request->json()->all();
 
         if ( $me->bloqueadors->where('id', $user->id )->count() ){
-
-            return;
+            return "Message Blocked";
         }
 
         if ( $me->matches()->where('id', $user->id ) ){
@@ -133,8 +130,11 @@ class MessageController extends Controller
 
 
             Redis::publish('outcomeMessage', json_encode([ $message ]) );
+            return "OK"
 
         }
+
+        return "User not known";
 
     }
 

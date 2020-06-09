@@ -22,7 +22,7 @@ class CreateMessagesTable extends Migration
             $table->text('receptor_token')->nullable();
             $table->text('texto');
             $table->boolean('checked')->default(false);
-            $table->boolean('caducado')->default(0);
+            $table->boolean('caducado')->default(false);
         });
     }
 

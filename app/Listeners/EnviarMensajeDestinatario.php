@@ -50,8 +50,8 @@ class EnviarMensajeDestinatario
             $message->emisor = $emisor->id;
             $message->receptor = $receptor->id;
             $message->receptor_token = $receptor->tokens[0]->id; //Alternativa sin almacenar $message["receptor_token"] = $receptor_token;
-            $message->checked = 0;
-            $message->caducado = 0;
+            $message->checked = false;
+            $message->caducado = false;
             $message->texto = $event->message;
 
             $message->save();

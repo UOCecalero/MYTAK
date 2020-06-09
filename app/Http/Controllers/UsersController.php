@@ -386,7 +386,7 @@ class UsersController extends Controller
                   ->get();
 
         //if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
-        if ($eventos->isEmpty()){ return []; }
+        if ($eventos->isEmpty()){ return \App\Helpers\General\CollectionHelper::paginate(collect()); }
         return \App\Helpers\General\CollectionHelper::paginate($eventos, 10);
 
     }
@@ -605,10 +605,9 @@ class UsersController extends Controller
         $user = Auth::user(); 
         $matches = $user->matches();
 
-        //if ($matches->isEmpty()){ abort(404,'No hay matches'); }
-        if ($matches->isEmpty()){ return []; }
-
-        return \App\Helpers\General\CollectionHelper::paginate($matches->values());
+        if ($matches->isEmpty()){ return \App\Helpers\General\CollectionHelper::paginate(collect());}
+        return matches;
+        return \App\Helpers\General\CollectionHelper::paginate($matches->values(), $matches->count());
     }
 
     /**
@@ -784,8 +783,9 @@ class UsersController extends Controller
     public function empresa()
     {
         $user = Auth::user();
-        //if( empty($user->empresa )){ abort(404, 'No tiene empresa');}
-        return \App\Helpers\General\CollectionHelper::paginate(collect([$user->empresa]));
+        $empresa = $user->empresa;
+        if (empty($empresa)){ return \App\Helpers\General\CollectionHelper::paginate(collect());}
+        return \App\Helpers\General\CollectionHelper::paginate(collect([$empresa]));
     }
 
     /**
