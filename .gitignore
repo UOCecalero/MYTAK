@@ -8,5 +8,4 @@ Homestead.json
 Homestead.yaml
 .env
 .DS_Store
-/public/index.php
 dump.rdb
