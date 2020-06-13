@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use App\Evento;
 use App\Match;
 use App\Empresa;
@@ -29,7 +32,7 @@ class UsersController extends Controller
     {
         $users = User::all();
 
-        return $users;
+        return $users::paginate();
     }
 
     /**
@@ -44,7 +47,7 @@ class UsersController extends Controller
         $user->save();
         $birthdate = $user->birthdate;
         $user['age'] = (string)Carbon::createFromFormat('Y-m-d',$birthdate)->age;
-        return $user;   
+        return \App\Helpers\General\CollectionHelper::paginate(collect([$user]));   
     }
 
 
@@ -67,7 +70,7 @@ class UsersController extends Controller
 
         //Con lo que devuelve Faecbook podemos hacer una llamada para extraer datos
         try {
-          $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email ,birthday' );
+          $resp = $fb->get('me?fields=id,first_name,last_name,gender,picture.height(480),email,birthday' );
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
           // When Graph returns an error
           echo 'Graph returned an error: ' . $e->getMessage();
@@ -370,7 +373,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function userevents()
+    public function userevents(Array $options = [])
     {   
 
       $user = Auth::user();
@@ -382,23 +385,26 @@ class UsersController extends Controller
                   ->select('tickets.id as ticketid','eventos.id as eventoid', 'eventos.creator', 'eventos.nombre','eventos.photo','eventos.event_ini','eventos.event_fin','eventos.aforo','eventos.location_name','eventos.lat','eventos.lng', 'prices.name as type','prices.description','prices.precio','tickets.qr', 'tickets.hash')
                   ->get();
 
-        if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
-        return $eventos;
+        //if ($eventos->isEmpty()){ abort(404,'No hay tickets'); }
+        if ($eventos->isEmpty()){ return \App\Helpers\General\CollectionHelper::paginate(collect()); }
+        return \App\Helpers\General\CollectionHelper::paginate($eventos, 10);
 
     }
 
      /**
      * Devuelve la posición ordenada del evento en función de su puntuación y la distancia.
      *
-     * @param  int  $id
+     * @param  int  $position
+     * @param  int  $distance
      * @return \Illuminate\Http\Response
      */
-    public function orderevents($position, $distance)
+    public function orderevents(Array $options = [])
     {   
 
         $user = Auth::user();
         $lat = $user->lat;
         $lng = $user->lng; 
+        $distance = $user->eventdistance ?? 25;
         
 
         //if (empty($distance)){ $distance = 25; /** 25Km distancia por defecto -> varable en la App Móvil**/ }
@@ -413,6 +419,8 @@ class UsersController extends Controller
             //             );
 
             $all_events = Evento::with('prices')->get();
+
+            //if ($distance > 150) { $distance = 150}
 
             $filtered = $all_events->filter(function ($evento) use ($lat, $lng, $distance){
                             $actual = 3959 * acos(
@@ -507,8 +515,12 @@ class UsersController extends Controller
             *******************************************************************************************/
 
             /************ Esta es la version nueva donde se devuelve por bloques de X elementos *********/
-            $array = $sorted->chunk(10);
-            return $array[$position -1]->values();
+            // $array = $sorted->chunk(10);
+            // return $array[$position -1]->values();
+            /************ Ultima versión donde se devuelve por páginas *********/
+            //return \App\Helpers\General\CollectionHelper::paginate($sorted->values(),$page);
+            //return $sorted->values();
+            return \App\Helpers\General\CollectionHelper::paginate($sorted->values());
                 
     }
 
@@ -575,8 +587,6 @@ class UsersController extends Controller
      */
     public function newUserPurchase(User $user, $token)
     {
-       
-
             $user = User::find($user);
             $user->customer_id = $customerid;
             return $user;        
@@ -592,12 +602,12 @@ class UsersController extends Controller
     public function match()
     {    
 
-        $user = Auth::user();
-        
+        $user = Auth::user(); 
         $matches = $user->matches();
 
-        if ($matches->isEmpty()){ abort(404,'No hay matches'); }
-        return $matches;
+        if ($matches->isEmpty()){ return \App\Helpers\General\CollectionHelper::paginate(collect());}
+        return matches;
+        return \App\Helpers\General\CollectionHelper::paginate($matches->values(), $matches->count());
     }
 
     /**
@@ -675,7 +685,6 @@ class UsersController extends Controller
             foreach ($res as $m) {
                 $id = $m->id;
                 Match::destroy($id);
-
             }
 
              //El numero de matches borrados (uno por evento)
@@ -699,8 +708,6 @@ class UsersController extends Controller
                 $id = $m->id;
                 Match::destroy($id);
             }
-             
-            
              return count($res);
 
     }
@@ -711,13 +718,13 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bloqueados()
+    public function bloqueados(Int $page)
     {   
         $user = Auth::user();
         $bloqueados = $user->bloqueados;
 
-        if( empty($bloqueados) ){ abort(404,'No hay bloqueados'); }
-        return $bloqueados;
+        //if( empty($bloqueados) ){ abort(404,'No hay bloqueados'); }
+        return $bloqueados::paginate();
     
     }
 
@@ -732,8 +739,8 @@ class UsersController extends Controller
         $user = Auth::user();
         $bloqueadores = $user->users;
 
-        if( empty($bloqueadores) ){ abort(404, 'No hay bloqueadores');}
-        return $bloqueadores;
+        //if( empty($bloqueadores) ){ abort(404, 'No hay bloqueadores');}
+        return $bloqueadores::paginate();
         
     }
 
@@ -776,8 +783,9 @@ class UsersController extends Controller
     public function empresa()
     {
         $user = Auth::user();
-        if( empty($user->empresa )){ abort(404, 'No tiene empresa');}
-        return $user->empresa;
+        $empresa = $user->empresa;
+        if (empty($empresa)){ return \App\Helpers\General\CollectionHelper::paginate(collect());}
+        return \App\Helpers\General\CollectionHelper::paginate(collect([$empresa]));
     }
 
     /**
@@ -801,6 +809,7 @@ class UsersController extends Controller
 
         else return 'La empresa que quieres borrar no corresponde a este usuario';
 
-    } 
-} **/
+    } **/
 }
+
+

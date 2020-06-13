@@ -19,7 +19,7 @@ use App\Http\Controllers\Auth\RegisterController;
 
 Route::get('/test', 'UsersController@index' );
 
-Route::get('/token/{token}/{devicetoken}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestro
+Route::get('/token/{token}/{devicetoken}', 'UsersController@exists'); //Le damos el token de facebook y nos devuelve el nuestrotoken
 
 Route::middleware('auth:api')->get('/me', 'UsersController@me');
 
@@ -40,11 +40,11 @@ Route::middleware('auth:api')->get('/me/ticket', 'PurchasesController@show'); //
 
 //Route::middleware('auth:api')->patch('/user/{user}', 'UsersController@index');
 
-Route::middleware('auth:api')->get('/me/evento', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
+Route::middleware('auth:api')->get('/me/evento/{options?}', 'UsersController@userevents'); //OK Hace referencia a los eventos comprados formateados para ser guardados en la database local
 
-Route::middleware('auth:api')->get('/me/timeline/{position}/{distance}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
+Route::middleware('auth:api')->get('/me/timeline/{options?}', 'UsersController@orderevents'); //Devuelve evento reordenado en función del usuario y la distancia
 
-Route::middleware('auth:api')->get('/me/ticket/{ticket}' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
+Route::middleware('auth:api')->get('/me/ticket' /* /{position}' */,'PurchasesController@ordermembers'); //Devuelve los usuarios que van a asistir a un evento del que tenemos comprado un ticket ordenados en función del rankeo de usuario, genero y edad.
 
 // Route::middleware('auth:api')->post('/user/{user}/evento/{evento}', 'UsersController@addevento'); //OK
 
@@ -59,7 +59,7 @@ Route::middleware('auth:api')->delete('/me/match/{match}', 'UsersController@delm
 Route::middleware('auth:api')->delete('/evento/{evento}/match', 'UsersController@delmatchonevento'); //OK
 //Esto elimina todos los match de un evento en concreto pero esta ruta debería de estar capada solo a administrador
 
-Route::middleware('auth:api')->get('/me/bloqueados', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
+Route::middleware('auth:api')->get('/me/bloqueados/{page}', 'UsersController@bloqueados'); //Debería de devolver los bloqueados
 
 Route::middleware('auth:api')->get('/me/bloqueadores', 'UsersController@bloqueados'); //Debería devolver los que te tienen bloqueado
 
@@ -79,30 +79,30 @@ Route::middleware('auth:api')->delete('/me/empresa/{empresa}', 'EmpresasControll
 
 /****************************** Empresa interface ******************************************/
 
-Route::middleware('auth:api')->get ('/empresa','EmpresasController@index'); //OK
+Route::middleware('auth:api')->get ('me/empresa','UsersController@empresa'); //OK
 
-Route::middleware('auth:api')->get ('/empresa/{empresa}','EmpresasController@show'); //OK
+Route::middleware('auth:api')->get ('me/empresa/{empresa}','EmpresasController@show'); //OK
 
-Route::middleware('auth:api')->get ('/empresa/{empresa}/eventos','EmpresasController@showeventos'); //OK
+Route::middleware('auth:api')->get ('me/empresa/{empresa}/eventos','EmpresasController@showeventos'); //OK
 
-Route::middleware('auth:api')->post ('/empresa/{empresa}/evento','EventosController@store'); //OK
+Route::middleware('auth:api')->post ('me/empresa/{empresa}/evento','EventosController@store'); //OK
 
-Route::middleware('auth:api')->delete ('/empresa/{empresa}/evento/{evento}','EventosController@destroy');
+Route::middleware('auth:api')->delete ('me/empresa/{empresa}/evento/{evento}','EventosController@destroy');
 
-//Route::middleware('auth:api')->patch ('/empresa/{empresa}/evento/{evento}','EmpresasController@index ');
+//Route::middleware('auth:api')->patch ('me/empresa/{empresa}/evento/{evento}','EmpresasController@index ');
 
-Route::middleware('auth:api')->get('/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados'); //OK
+Route::middleware('auth:api')->get('me/empresa/{empresa}/bloqueado', 'EmpresasController@bloqueados'); //OK
 
-Route::middleware('auth:api')->post('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado');//OK
+Route::middleware('auth:api')->post('me/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@addbloqueado');//OK
 
-Route::middleware('auth:api')->delete('/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@delbloqueado');
+Route::middleware('auth:api')->delete('me/empresa/{empresa}/bloqueado/{bloqueado}', 'EmpresasController@delbloqueado');
 //OK
 
 
 /******************************* Evento interface **********************************************/
 
 //La devolución de los eventos solo se hace en base a ciertos parámetros
-//Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK
+Route::middleware('auth:api')->get('/eventos', 'EventosController@index'); //OK   ===> Esta sin comentar para hacer pruebas
 //Route::middleware('auth:api')->post('/eventos', 'EventosController@index'); //Futuro método pasar parametros
 
 

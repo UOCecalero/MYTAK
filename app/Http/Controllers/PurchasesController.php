@@ -12,6 +12,9 @@ use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Auth;
 use Stripe\{Stripe, Charge, Customer};
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class PurchasesController extends Controller
 {
@@ -183,11 +186,11 @@ class PurchasesController extends Controller
 
      $tickets = $user->tickets;
 
-     if ($tickets->isEmpty()){ return null; }
+     if ($tickets->isEmpty()){ return []; }
     
         else{ 
 
-            return $tickets; 
+            return \App\Helpers\General\CollectionHelper::paginate($tickets); 
         }
      
     }
@@ -352,6 +355,5 @@ class PurchasesController extends Controller
     
 
     }
-
 
 }
